@@ -1,16 +1,16 @@
 import { JTDSchemaType } from "ajv/dist/jtd.js";
-import { ICredentials, ICAC2config } from "services/cac2.js";
+import { ICredentials, ICAS2config } from "services/cas2.js";
 
 export interface IGlobalCfg {
   credentials: ICredentials;
-  cac2: ICAC2config;
+  cas2: ICAS2config;
   webhook: string;
   fallback_webhook: string;
 }
 
 const JTD_AppConfig: JTDSchemaType<IGlobalCfg> = {
   properties: {
-    cac2: {
+    cas2: {
       properties: {
         loginPath: { type: "string" },
         services: { elements: { type: "string" } },

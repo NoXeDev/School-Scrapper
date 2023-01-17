@@ -1,5 +1,5 @@
 import Bulletin from "./services/bulletin.js";
-import cac2 from "./services/cac2.js";
+import cas2 from "./services/cas2.js";
 import Sheduler from "./scheduler.js";
 import cfgLoader from "./core/configLoader.js";
 import appconfig_schema, { IGlobalCfg } from "./common/app_config_schemas.js";
@@ -10,7 +10,7 @@ import { DiscordWebHook } from "./core/request.js";
 class Bot {
   public loader: cfgLoader<IGlobalCfg>;
   public cfg: IGlobalCfg;
-  public AuthProvider: cac2;
+  public AuthProvider: cas2;
   public bulletin: Bulletin;
   public shed: Sheduler;
   public DBManager: storage<TRessources_Record>;
@@ -25,7 +25,7 @@ class Bot {
   async _run() {
     try {
       this.cfg = await this.loader.loadConfig("./config.json");
-      this.AuthProvider = new cac2(this.cfg.cac2, this.cfg.credentials);
+      this.AuthProvider = new cas2(this.cfg.cas2, this.cfg.credentials);
       this.bulletin = new Bulletin(this.AuthProvider);
       this.discord = new DiscordWebHook(this.cfg.webhook, this.cfg.fallback_webhook);
     } catch (e) {

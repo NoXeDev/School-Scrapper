@@ -6,7 +6,7 @@ export enum ECAC2_SERVICES {
   BULLETIN,
 }
 
-export interface ICAC2AuthInfos {
+export interface ICAS2AuthInfos {
   Auth_Service_Url: string;
   ServiceRootUrl: string;
 }
@@ -16,22 +16,22 @@ export interface ICredentials {
   password: string;
 }
 
-export interface ICAC2config {
+export interface ICAS2config {
   loginPath: string;
   services: Array<string>;
 }
 
-export default class CAC2 {
+export default class CAS2 {
   private tgc: string;
   private creds: ICredentials;
-  private config: ICAC2config;
+  private config: ICAS2config;
 
-  constructor(config: ICAC2config, creds: ICredentials) {
+  constructor(config: ICAS2config, creds: ICredentials) {
     this.creds = creds;
     this.config = config;
   }
 
-  public async getAuthInfos(service: ECAC2_SERVICES): Promise<ICAC2AuthInfos> {
+  public async getAuthInfos(service: ECAC2_SERVICES): Promise<ICAS2AuthInfos> {
     const headers = {
       "Content-Type": "application/x-www-form-urlencoded",
       "User-Agent":
@@ -93,7 +93,7 @@ export default class CAC2 {
       });
 
     if (loginRes.headers["location"] && loginRes.headers["set-cookie"]) {
-      const returnValue: ICAC2AuthInfos = {
+      const returnValue: ICAS2AuthInfos = {
         Auth_Service_Url: loginRes.headers["location"],
         ServiceRootUrl: this.config.services[service],
       };

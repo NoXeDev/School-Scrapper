@@ -1,4 +1,4 @@
-import CAC2, { ICAC2AuthInfos, ECAC2_SERVICES } from "./cac2.js";
+import CAC2, { ICAS2AuthInfos, ECAC2_SERVICES } from "./cas2.js";
 import axios, { AxiosResponse, AxiosError, isAxiosError } from "axios";
 import ajv, { ValidateFunction } from "ajv";
 import { TRessources_Record, JTDBulletin, IBulletin_Ressource, IBulletin_Evaluation } from "../common/bulletin_interfaces.js";
@@ -19,7 +19,7 @@ export default class Bulletin {
 
   public async doAuth(): Promise<void> {
     let doAuthRes: AxiosResponse<any, any>;
-    let AuthInfos: ICAC2AuthInfos;
+    let AuthInfos: ICAS2AuthInfos;
     try {
       AuthInfos = await this.cac2_auth.getAuthInfos(ECAC2_SERVICES.BULLETIN);
       doAuthRes = await axios
