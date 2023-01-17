@@ -1,5 +1,5 @@
 {
-  "name": "School Scrapper",
+  "name": "school-scrapper",
   "version": "0.1",
   "description": "A simple app that fetch school notes and make a request on a discord webhook.",
   "scripts": {
