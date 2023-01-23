@@ -46,6 +46,7 @@ async function EachFivesMinutes(bot: Bot): Promise<void> {
   let notes: TRessources_Record;
   try {
     notes = await bot.bulletin.getDatas();
+    console.log(notes);
   } catch (e) {
     if (e?.message) {
       await bot.discord.fallbackPost("❌ - " + e.message);

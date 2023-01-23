@@ -28,6 +28,10 @@ export class DiscordWebHook {
                 value: newNote.description,
               },
               {
+                name: "Semestre",
+                value: ressource.semestre != undefined ? (ressource.semestre + 1).toString() : "Le seul disponible",
+              },
+              {
                 name: "Ressource",
                 value: resName + " - " + ressource.titre,
               },
