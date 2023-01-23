@@ -9,7 +9,7 @@
     "start": "npm run build && node dist/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint src/**/*.ts",
-    "deploy": "pm2 start dist/src/index.js --name school_scrap",
+    "deploy": "pm2 start dist/index.js --name school_scrap",
     "restart": "pm2 restart school_scrap"
   },
   "repository": {
