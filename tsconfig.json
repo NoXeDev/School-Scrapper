@@ -17,7 +17,8 @@
       "inlineSourceMap": true,
       "inlineSources": true,
       "strictNullChecks": true,
+      "resolveJsonModule": true
     },
-    "include": ["**/*"],
+    "include": ["**/*", "./config.json"],
     "exclude": ["node_modules", "**/*.spec.ts", "dist"]
 }
