@@ -26,6 +26,7 @@ export interface IBulletin_Ressource {
   id: number;
   titre: string;
   url: string;
+  semestre?: number;
 }
 
 const JTDBulletin: JSONSchemaType<TRessources_Record> = {
@@ -71,6 +72,7 @@ const JTDBulletin: JSONSchemaType<TRessources_Record> = {
         id: { type: "integer" },
         titre: { type: "string" },
         url: { type: "string" },
+        semestre: { type: "number", nullable: true },
       },
       required: ["code_apogee", "evaluations", "id", "titre", "url"],
     },
