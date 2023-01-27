@@ -1,6 +1,6 @@
 import CAC2, { ICAS2AuthInfos, ECAC2_SERVICES } from "./cas2.js";
 import axios, { AxiosResponse, AxiosError, isAxiosError } from "axios";
-import ajv, { ValidateFunction } from "ajv";
+import ajv, { ValidateFunction, DefinedError } from "ajv";
 import { TRessources_Record, JTDBulletin, IBulletin_Ressource, IBulletin_Evaluation } from "../common/bulletin_interfaces.js";
 
 export default class Bulletin {
@@ -118,7 +118,11 @@ export default class Bulletin {
         throw new Error("[BULLETIN] ERROR : Validator throw an error, datas is on wrong format");
       }
     } else {
-      throw new Error("[BULLETIN] ERROR : Invalids datas parsed");
+      let errstr = "";
+      for (const err of this.dataValidator.errors as DefinedError[]) {
+        errstr += err.message;
+      }
+      throw new Error("[BULLETIN] ERROR : Invalids datas parsed\n" + errstr);
     }
   }
 
