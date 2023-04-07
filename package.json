@@ -3,15 +3,12 @@
   "version": "0.1",
   "description": "A simple app that fetch school notes and make a request on a discord webhook.",
   "scripts": {
-    "dev": "nodemon src/index.ts",
-    "build": "npm run lint && rimraf dist/ && tsc",
-    "webpack": "webpack",
-    "build-prod": "rimraf dist/ && rimraf database && tsc",
-    "start": "npm run build && node dist/index.js",
+    "build-tsc": "npm run lint && rimraf dist/ && tsc",
+    "webpack": "webpack --mode development",
+    "build-prod": "npm run lint && rimraf dist/ && webpack --mode production",
+    "start": "npm run webpack && node dist/bundle.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint src/**/*.ts",
-    "deploy": "pm2 start dist/index.js --name school_scrap",
-    "restart": "pm2 restart school_scrap"
+    "lint": "eslint src/**/*.ts"
   },
   "repository": {
     "type": "git",
