@@ -1,6 +1,5 @@
 import axios, { AxiosResponse } from "axios";
 import { HTMLElement, parse } from "node-html-parser";
-import querystring from "query-string";
 import { ELogType } from "../core/logger.js";
 
 export enum ECAS2_SERVICES {
@@ -75,10 +74,10 @@ export default class CAS2 {
       username: this.creds.username,
       password: this.creds.password,
     };
-    const urlencodedFormLoginPayload = querystring.stringify(loginPayload);
+    const urlencodedFormLoginPayload = new URLSearchParams(loginPayload);
 
     const loginRes: AxiosResponse<any, any> = await axios
-      .post(urlCFG, urlencodedFormLoginPayload, {
+      .post(urlCFG, urlencodedFormLoginPayload.toString(), {
         headers: headers,
         maxRedirects: 0, // Prevent redirection (cas2 return a 302 redirect code)
         validateStatus: function (status: number): boolean {

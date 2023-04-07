@@ -15,6 +15,7 @@
       "inlineSourceMap": true,
       "inlineSources": true,
       "strictNullChecks": true,
+      "esModuleInterop": true
     },
     "include": ["**/*"],
     "exclude": ["node_modules", "**/*.spec.ts", "dist"]

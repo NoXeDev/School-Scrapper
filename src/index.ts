@@ -45,7 +45,7 @@ class Bot {
     this.shed.bindAJob("Check_New_Notes", "*/5 * * * *", async () => await EachFivesMinutes(this));
     await AppLogger.log({
       message: "Service bind thought Scheduler !",
-      moduleName: "Core",
+      moduleName: this.constructor.name,
       type: ELogType.INFO,
       quickCode: 0,
     });
