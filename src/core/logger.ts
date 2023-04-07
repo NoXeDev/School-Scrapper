@@ -83,7 +83,9 @@ export class AppLogger {
     const rawStr = `${emote} [${new Date().toLocaleString()}] - [${content.moduleName}]${
       content.quickCode ? "(" + content.quickCode + ")" : ""
     } :  ${content.message}${
-      content.detail ? `\nDetails : ${typeof content.detail == "object" ? JSON.stringify(content.detail) : content.detail}` : ""
+      content.detail
+        ? `\nDetails :\n \`${typeof content.detail == "object" ? JSON.stringify(content.detail) : content.detail}\``
+        : ""
     }`;
 
     console.log(rawStr); // Log into console

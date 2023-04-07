@@ -108,6 +108,16 @@ async function EachFivesMinutes(bot: Bot): Promise<void> {
 
 // Main ASYNC WRAPPER
 (async () => {
+  process.on("uncaughtException", (err) => {
+    AppLogger.log({
+      message: "Uncaught global exception",
+      type: ELogType.ERROR,
+      moduleName: "App",
+      quickCode: -1,
+      detail: err.name + " " + err.message,
+    });
+  });
+
   const bot: Bot = new Bot();
   await bot._run();
 })();
