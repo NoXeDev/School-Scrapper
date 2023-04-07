@@ -1,8 +1,9 @@
 import axios, { AxiosResponse } from "axios";
 import { HTMLElement, parse } from "node-html-parser";
 import queryString from "query-string";
+import { ELogType } from "../core/logger.js";
 
-export enum ECAC2_SERVICES {
+export enum ECAS2_SERVICES {
   BULLETIN,
 }
 
@@ -31,7 +32,7 @@ export default class CAS2 {
     this.config = config;
   }
 
-  public async getAuthInfos(service: ECAC2_SERVICES): Promise<ICAS2AuthInfos> {
+  public async getAuthInfos(service: ECAS2_SERVICES): Promise<ICAS2AuthInfos> {
     const headers = {
       "Content-Type": "application/x-www-form-urlencoded",
       "User-Agent":
@@ -79,16 +80,24 @@ export default class CAS2 {
     const loginRes: AxiosResponse<any, any> = await axios
       .post(urlCFG, urlencodedFormLoginPayload, {
         headers: headers,
-        maxRedirects: 0, // Prevent redirection (cac2 return a 302 redirect code)
+        maxRedirects: 0, // Prevent redirection (cas2 return a 302 redirect code)
         validateStatus: function (status: number): boolean {
-          return status == 302; // We wan't only this code, this is the only issue with a valid auth with CAC2
+          return status == 302; // We wan't only this code, this is the only issue with a valid auth with CAS2
         },
       })
       .catch((err) => {
         if (err.response.status == 401) {
-          throw new Error("[CAC2] ERROR : Invalid credentials");
+          throw {
+            message: "Invalid credentials",
+            moduleName: this.constructor.name,
+            type: ELogType.CRITIAL,
+          };
         } else {
-          throw new Error("[CAC2] ERROR : Error with request : \n" + err.message);
+          throw {
+            message: "Error with request",
+            moduleName: this.constructor.name,
+            type: ELogType.CRITIAL,
+          };
         }
       });
 
@@ -101,7 +110,11 @@ export default class CAS2 {
 
       return returnValue;
     } else {
-      throw new Error("[CAC2] - ERROR : bad request handle.");
+      throw {
+        message: "Bad request handle",
+        moduleName: this.constructor.name,
+        type: ELogType.CRITIAL,
+      };
     }
   }
 }

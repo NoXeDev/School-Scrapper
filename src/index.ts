@@ -2,6 +2,7 @@ import Bulletin from "./services/bulletin.js";
 import cas2 from "./services/cas2.js";
 import Sheduler from "./scheduler.js";
 import cfgLoader from "./core/configLoader.js";
+import { AppLogger, ELogType, RichLog } from "./core/logger.js";
 import appconfig_schema, { IGlobalCfg } from "./common/app_config_schemas.js";
 import storage from "./core/storage.js";
 import { TRessources_Record, IBulletin_Ressource, IBulletin_Evaluation } from "./common/bulletin_interfaces.js";
@@ -15,6 +16,7 @@ class Bot {
   public shed: Sheduler;
   public DBManager: storage<TRessources_Record>;
   public discord: DiscordWebHook;
+  public logger: AppLogger;
 
   constructor() {
     this.loader = new cfgLoader<IGlobalCfg>(appconfig_schema);
@@ -27,7 +29,10 @@ class Bot {
       this.cfg = await this.loader.loadConfig("./config.json");
       this.AuthProvider = new cas2(this.cfg.cas2, this.cfg.credentials);
       this.bulletin = new Bulletin(this.AuthProvider);
-      this.discord = new DiscordWebHook(this.cfg.webhook, this.cfg.fallback_webhook);
+      this.discord = new DiscordWebHook(this.cfg.webhook);
+      if (this.cfg.fallback_webhook) {
+        await AppLogger.setWebHookLog(this.cfg.fallback_webhook);
+      }
     } catch (e) {
       console.error(e);
       process.exit(-1);
@@ -38,7 +43,12 @@ class Bot {
     }
 
     this.shed.bindAJob("Check_New_Notes", "*/5 * * * *", async () => await EachFivesMinutes(this));
-    this.discord.fallbackPost("<:check:439947379831996426> [CORE] - Service bind thought Scheduler !");
+    await AppLogger.log({
+      message: "Service bind thought Scheduler !",
+      moduleName: "Core",
+      type: ELogType.INFO,
+      quickCode: 0,
+    });
   }
 }
 
@@ -47,10 +57,10 @@ async function EachFivesMinutes(bot: Bot): Promise<void> {
   try {
     notes = await bot.bulletin.getDatas();
   } catch (e) {
-    if (e?.message) {
-      await bot.discord.fallbackPost("❌ - " + e.message);
+    if (AppLogger.isRichLog(e)) {
+      await AppLogger.log(e as RichLog);
     } else {
-      await bot.discord.fallbackPost("❌ - " + e?.toString());
+      await AppLogger.log(e?.toString());
     }
     return;
   }

@@ -1,5 +1,6 @@
 import fs from "fs/promises";
 import Ajv, { JTDSchemaType, JTDParser } from "ajv/dist/jtd.js";
+import { ELogType } from "./logger.js";
 //import addFormats from "ajv-formats";
 
 export default class cfgLoader<inter> {
@@ -17,7 +18,12 @@ export default class cfgLoader<inter> {
     try {
       rawdatas = await fs.readFile(pathCfg);
     } catch (e) {
-      throw new Error("[CFGLOADER] - Error when read configuration file.\n" + e);
+      throw {
+        message: "Error when read configuration file.\n" + e,
+        type: ELogType.CRITIAL,
+        moduleName: this.constructor.name,
+        quickCode: 10,
+      };
     }
 
     // datas is valid
@@ -27,9 +33,19 @@ export default class cfgLoader<inter> {
     } else {
       if (this.compiler.message) {
         const errorMsg: string = this.compiler.message;
-        throw new Error("[CFGLOADER] - Error when parse JSON data : \n" + errorMsg);
+        throw {
+          message: "Error when parse JSON data : \n" + errorMsg,
+          type: ELogType.CRITIAL,
+          moduleName: this.constructor.name,
+          quickCode: 11,
+        };
       } else {
-        throw new Error("[CFGLOADER] - Unknown error when parse data");
+        throw {
+          message: "Unknown error when parse data",
+          type: ELogType.CRITIAL,
+          moduleName: this.constructor.name,
+          quickCode: 12,
+        };
       }
     }
   }

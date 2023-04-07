@@ -1,18 +1,29 @@
-import CAC2, { ICAS2AuthInfos, ECAC2_SERVICES } from "./cas2.js";
+import CAS2, { ICAS2AuthInfos, ECAS2_SERVICES } from "./cas2.js";
+import { ELogType } from "../core/logger.js";
 import axios, { AxiosResponse, AxiosError, isAxiosError } from "axios";
-import ajv, { ValidateFunction, DefinedError } from "ajv";
+import ajv, { ValidateFunction } from "ajv";
 import { TRessources_Record, JTDBulletin, IBulletin_Ressource, IBulletin_Evaluation } from "../common/bulletin_interfaces.js";
+
+enum ELogQuickErrCode {
+  INVALID_AUTH = 1,
+  AUTH_REQUEST_ERROR,
+  SERVICE_ERROR,
+  BAD_DATAS,
+  BAD_SESSIONID,
+  UNKNOWN_ERROR,
+  REQUEST_ERROR,
+}
 
 export default class Bulletin {
   public isAuth: boolean;
   private sessid: string;
-  private cac2_auth: CAC2;
+  private cas2_auth: CAS2;
   private service_url: string;
   private ajv: ajv.default;
   private dataValidator: ValidateFunction;
-  constructor(AuthProvider: CAC2) {
+  constructor(AuthProvider: CAS2) {
     this.isAuth = false;
-    this.cac2_auth = AuthProvider;
+    this.cas2_auth = AuthProvider;
     this.ajv = new ajv.default();
     this.dataValidator = this.ajv.compile(JTDBulletin);
   }
@@ -21,23 +32,40 @@ export default class Bulletin {
     let doAuthRes: AxiosResponse<any, any>;
     let AuthInfos: ICAS2AuthInfos;
     try {
-      AuthInfos = await this.cac2_auth.getAuthInfos(ECAC2_SERVICES.BULLETIN);
+      AuthInfos = await this.cas2_auth.getAuthInfos(ECAS2_SERVICES.BULLETIN);
       doAuthRes = await axios
         .get(AuthInfos.Auth_Service_Url, {
           maxRedirects: 0,
           validateStatus: function (status: number): boolean {
-            return status == 302; // We wan't only this code, this is the only issue with a valid auth with CAC2
+            return status == 302; // We wan't only this code, this is the only issue with a valid auth with CAS2
           },
         })
         .catch((err) => {
           if (err.response.status !== 302) {
-            throw new Error("[BULLETIN] ERROR : Invalid AUTH CAC2");
+            throw {
+              message: "Invalid AUTH CAS2",
+              moduleName: this.constructor.name,
+              type: ELogType.ERROR,
+              quickCode: ELogQuickErrCode.INVALID_AUTH,
+            };
           } else {
-            throw new Error("[BULLETIN] ERROR : Error with request : \n" + err.message);
+            throw {
+              message: "Error with auth request",
+              moduleName: this.constructor.name,
+              type: ELogType.ERROR,
+              quickCode: ELogQuickErrCode.AUTH_REQUEST_ERROR,
+              detail: err,
+            };
           }
         });
     } catch (e) {
-      throw new Error("[BULLETIN] ERROR : BULLETIN service unknown error or CAC2 service error \n" + e);
+      throw {
+        message: "Service unknown error or CAS2 service error",
+        moduleName: this.constructor.name,
+        type: ELogType.ERROR,
+        quickCode: ELogQuickErrCode.UNKNOWN_ERROR,
+        detail: e,
+      };
     }
 
     this.service_url = AuthInfos.ServiceRootUrl;
@@ -46,12 +74,23 @@ export default class Bulletin {
         .split(";")[0]
         .replace("PHPSESSID=", "");
     } else {
-      throw new Error("[BULLETIN] - Fetched datas is brokens and/or unexpected.");
+      throw {
+        message: "Unexpected fetched datas",
+        moduleName: this.constructor.name,
+        type: ELogType.ERROR,
+        quickCode: ELogQuickErrCode.BAD_DATAS,
+      };
     }
 
     if (!(await this.__checkSessID())) {
       this.sessid = "";
-      throw new Error("[BULLETIN] - Invalid sessionID provided during Auth process. Please open an issue on the repo");
+      throw {
+        message: "Invalid sessionID provided",
+        moduleName: this.constructor.name,
+        type: ELogType.WARNING,
+        quickCode: ELogQuickErrCode.BAD_SESSIONID,
+        detail: "Please open an issue on the repo",
+      };
     }
 
     this.isAuth = true;
@@ -66,7 +105,7 @@ export default class Bulletin {
         {
           maxRedirects: 0,
           validateStatus: function (status: number): boolean {
-            return status == 302; // We wan't only this http code, this is the only issue with a valid auth with CAC2
+            return status == 302; // We wan't only this http code, this is the only issue with a valid auth with CAS2
           },
           headers: { Cookie: "PHPSESSID=" + this.sessid },
         },
@@ -74,9 +113,20 @@ export default class Bulletin {
     } catch (e) {
       if (isAxiosError(e)) {
         const castedErr = e as AxiosError;
-        throw new Error("[BULLETIN] ERROR : Error with request : \n" + castedErr.message);
+        throw {
+          message: "Error with request",
+          moduleName: this.constructor.name,
+          type: ELogType.ERROR,
+          quickCode: ELogQuickErrCode.REQUEST_ERROR,
+          detail: castedErr.message,
+        };
       } else {
-        throw new Error("[BULLETIN] ERROR : BULLETIN service unknown error");
+        throw {
+          message: "Service unknown error",
+          moduleName: this.constructor.name,
+          type: ELogType.ERROR,
+          quickCode: ELogQuickErrCode.UNKNOWN_ERROR,
+        };
       }
     }
 
@@ -92,7 +142,7 @@ export default class Bulletin {
       try {
         await this.doAuth();
       } catch (e) {
-        throw new Error(e);
+        throw e;
       }
     }
     const postURL: string = this.service_url + "/services/data.php?q=dataPremi%C3%A8reConnexion";
@@ -105,7 +155,7 @@ export default class Bulletin {
           // retry
           datas = await axios.post(postURL, null, { headers: { Cookie: "PHPSESSID=" + this.sessid } });
         } catch (e) {
-          throw new Error(e);
+          throw e;
         }
       }
     }
@@ -116,7 +166,12 @@ export default class Bulletin {
         if (this.dataValidator(rawRessources)) {
           return rawRessources as TRessources_Record;
         } else {
-          throw new Error("[BULLETIN] ERROR : Validator throw an error, datas is on wrong format");
+          throw {
+            message: "Service unknown error",
+            moduleName: this.constructor.name,
+            type: ELogType.ERROR,
+            quickCode: ELogQuickErrCode.BAD_DATAS,
+          };
         }
       } else {
         // This section is for, when there more than one semestre
@@ -138,7 +193,12 @@ export default class Bulletin {
               })
               .catch((e) => {
                 const err: AxiosError = e as AxiosError;
-                throw new Error("[BULLETIN] Error : Axios error : \n" + err.message);
+                throw {
+                  message: "Axios error",
+                  moduleName: this.constructor.name,
+                  type: ELogType.ERROR,
+                  detail: err.message,
+                };
               });
 
             if (res.data["relevé"] && res.data["relevé"]["ressources"] && this.dataValidator(res.data["relevé"]["ressources"])) {
@@ -151,15 +211,20 @@ export default class Bulletin {
           }
           return resolvedReturn;
         } else {
-          throw new Error("[BULLETIN] ERROR : Semestres paring failed");
+          throw {
+            message: "Semestres paring failed",
+            moduleName: this.constructor.name,
+            type: ELogType.ERROR,
+          };
         }
       }
     } else {
-      let errstr = "";
-      for (const err of this.dataValidator.errors as DefinedError[]) {
-        errstr += err.message;
-      }
-      throw new Error("[BULLETIN] ERROR : Invalids datas parsed\n" + errstr);
+      throw {
+        message: "Invalids datas parsed",
+        moduleName: this.constructor.name,
+        type: ELogType.ERROR,
+        detail: datas.data,
+      };
     }
   }
 

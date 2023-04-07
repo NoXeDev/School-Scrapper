@@ -5,7 +5,7 @@ export interface IGlobalCfg {
   credentials: ICredentials;
   cas2: ICAS2config;
   webhook: string;
-  fallback_webhook: string;
+  fallback_webhook?: string;
 }
 
 const JTD_AppConfig: JTDSchemaType<IGlobalCfg> = {
@@ -23,6 +23,8 @@ const JTD_AppConfig: JTDSchemaType<IGlobalCfg> = {
       },
     },
     webhook: { type: "string" },
+  },
+  optionalProperties: {
     fallback_webhook: { type: "string" },
   },
 };

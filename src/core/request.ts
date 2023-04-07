@@ -1,11 +1,10 @@
 import axios, { isAxiosError, AxiosError } from "axios";
 import { IBulletin_Evaluation, IBulletin_Ressource } from "common/bulletin_interfaces.js";
+import { ELogType } from "./logger.js";
 export class DiscordWebHook {
   private url: string;
-  private fallbackUrl: string;
-  constructor(link: string, fallbackUrl: string) {
+  constructor(link: string) {
     this.url = link;
-    this.fallbackUrl = fallbackUrl;
   }
 
   public async post(resName: string, newNote: IBulletin_Evaluation, ressource: IBulletin_Ressource, UEaffectation: string) {
@@ -66,18 +65,20 @@ export class DiscordWebHook {
     } catch (e) {
       if (isAxiosError(e)) {
         const castedErr = e as AxiosError;
-        throw new Error("[REQUEST] ERROR : Error with request : \n" + castedErr.message);
+        throw {
+          message: "Error with request : \n" + castedErr.message,
+          type: ELogType.ERROR,
+          moduleName: "DISCORD REQUEST",
+          quickCode: 20,
+        };
       } else {
-        throw new Error("[REQUEST] ERROR : REQUEST core unknown error");
+        throw {
+          message: "core unknown error",
+          type: ELogType.ERROR,
+          moduleName: "DISCORD REQUEST",
+          quickCode: 21,
+        };
       }
-    }
-  }
-
-  public async fallbackPost(message: string) {
-    try {
-      await axios.post(this.fallbackUrl, { content: message });
-    } catch (e) {
-      console.error(e); // bruh moment for the app
     }
   }
 }
