@@ -1,5 +1,5 @@
 import { JTDSchemaType } from "ajv/dist/jtd.js";
-import { ICredentials, ICAS2config } from "services/cas2.js";
+import { ICredentials, ICAS2config } from "../services/cas2.js";
 
 export interface IGlobalCfg {
   credentials: ICredentials;

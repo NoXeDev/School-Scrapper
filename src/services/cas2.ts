@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from "axios";
 import { HTMLElement, parse } from "node-html-parser";
-import queryString from "query-string";
+import querystring from "query-string";
 import { ELogType } from "../core/logger.js";
 
 export enum ECAS2_SERVICES {
@@ -75,7 +75,7 @@ export default class CAS2 {
       username: this.creds.username,
       password: this.creds.password,
     };
-    const urlencodedFormLoginPayload = queryString.stringify(loginPayload);
+    const urlencodedFormLoginPayload = querystring.stringify(loginPayload);
 
     const loginRes: AxiosResponse<any, any> = await axios
       .post(urlCFG, urlencodedFormLoginPayload, {

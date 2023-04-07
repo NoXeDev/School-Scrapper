@@ -103,7 +103,7 @@ export class AppLogger {
   }
 
   public static isRichLog(e: any): boolean {
-    const ajv: Ajv.default = new Ajv.default();
+    const ajv: Ajv = new Ajv();
     const compiler: ValidateFunction = ajv.compile(RichLogSchema);
     return compiler(e);
   }

@@ -5,9 +5,9 @@ import { ELogType } from "./logger.js";
 
 export default class cfgLoader<inter> {
   private compiler: JTDParser;
-  private ajv: Ajv.default;
+  private ajv: Ajv;
   constructor(shematic: JTDSchemaType<inter>) {
-    this.ajv = new Ajv.default();
+    this.ajv = new Ajv();
     // addFormats.default(this.ajv, { mode: "fast", formats: ["uri"] });
     this.compiler = this.ajv.compileParser(shematic);
   }

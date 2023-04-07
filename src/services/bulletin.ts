@@ -19,12 +19,12 @@ export default class Bulletin {
   private sessid: string;
   private cas2_auth: CAS2;
   private service_url: string;
-  private ajv: ajv.default;
+  private ajv: ajv;
   private dataValidator: ValidateFunction;
   constructor(AuthProvider: CAS2) {
     this.isAuth = false;
     this.cas2_auth = AuthProvider;
-    this.ajv = new ajv.default();
+    this.ajv = new ajv();
     this.dataValidator = this.ajv.compile(JTDBulletin);
   }
 

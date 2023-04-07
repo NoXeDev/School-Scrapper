@@ -1,5 +1,5 @@
 import axios, { isAxiosError, AxiosError } from "axios";
-import { IBulletin_Evaluation, IBulletin_Ressource } from "common/bulletin_interfaces.js";
+import { IBulletin_Evaluation, IBulletin_Ressource } from "../common/bulletin_interfaces.js";
 import { ELogType } from "./logger.js";
 export class DiscordWebHook {
   private url: string;
