@@ -9,6 +9,7 @@ export class DiscordWebHook {
 
   public async post(resName: string, newNote: IBulletin_Evaluation, ressource: IBulletin_Ressource, UEaffectation: string) {
     try {
+      await axios.post(this.url, { content: "<@&1093971767237812366>" });
       await axios.post(this.url, {
         embeds: [
           {
