@@ -1,3 +1,5 @@
+const { EsbuildPlugin } = require("esbuild-loader");
+
 module.exports = {
   devtool: "inline-source-map",
   entry: "./src/index.ts",
@@ -17,8 +19,15 @@ module.exports = {
   module: {
     rules: [
       // all files with a `.ts`, `.cts`, `.mts` or `.tsx` extension will be handled by `ts-loader`
-      { test: /\.([cm]?ts)$/, loader: "ts-loader" },
+      { test: /\.([cm]?ts)$/, loader: "esbuild-loader" },
     ],
   },
   target: "node",
+  optimization: {
+    minimizer: [
+      new EsbuildPlugin ({
+        keepNames: true,
+      }),
+    ],
+  },
 };

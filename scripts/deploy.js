@@ -24,7 +24,7 @@ async function preChecks() {
   console.log("[*] - Configuring cwd env...")
   let cwdSplitted = process.cwd().split("\\")
   let cwdLast = cwdSplitted[cwdSplitted.length - 1]
-  if(cwdLast == "scripts"){
+  if(cwdLast == "scripts" || cwdLast == "dist"){
     console.log("[0] - Warning : Bad cwd configuration, changing dir...")
     process.chdir("../")
   }

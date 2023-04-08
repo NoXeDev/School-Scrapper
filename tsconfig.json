@@ -15,7 +15,8 @@
       "inlineSourceMap": true,
       "inlineSources": true,
       "strictNullChecks": true,
-      "esModuleInterop": true
+      "esModuleInterop": true,
+      "resolveJsonModule": true
     },
     "include": ["**/*"],
     "exclude": ["node_modules", "**/*.spec.ts", "dist", "scripts"]

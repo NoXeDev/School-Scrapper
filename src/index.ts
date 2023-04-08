@@ -7,6 +7,7 @@ import appconfig_schema, { IGlobalCfg } from "./common/app_config_schemas.js";
 import storage from "./core/storage.js";
 import { TRessources_Record, IBulletin_Ressource, IBulletin_Evaluation } from "./common/bulletin_interfaces.js";
 import { DiscordWebHook } from "./core/request.js";
+import Updater from "./core/updater.js";
 
 class Bot {
   public loader: cfgLoader<IGlobalCfg>;
@@ -43,13 +44,17 @@ class Bot {
     }
 
     process.on("uncaughtException", (err) => {
-      AppLogger.log({
-        message: "Uncaught global exception",
-        type: ELogType.ERROR,
-        moduleName: this.constructor.name,
-        quickCode: -1,
-        detail: err.name + " " + err.message,
-      });
+      if (AppLogger.isRichLog(err)) {
+        AppLogger.log(err as unknown as RichLog);
+      } else {
+        AppLogger.log({
+          message: "Uncaught global exception",
+          type: ELogType.ERROR,
+          moduleName: this.constructor.name,
+          quickCode: -1,
+          detail: err.name + " " + err.message,
+        });
+      }
     });
 
     if (process.argv.includes("update-ok")) {
@@ -58,6 +63,7 @@ class Bot {
         moduleName: this.constructor.name,
         type: ELogType.INFO,
         quickCode: 0,
+        emote: "ℹ️",
       });
     }
 
@@ -72,6 +78,25 @@ class Bot {
 }
 
 async function EachFivesMinutes(bot: Bot): Promise<void> {
+  if (
+    await Updater.checkForUpdates().catch((e) => {
+      AppLogger.log(e);
+    })
+  ) {
+    await AppLogger.log({
+      message: "An update is available... Updating...",
+      moduleName: "Updater",
+      type: ELogType.INFO,
+      emote: "ℹ️",
+    });
+    try {
+      await Updater.update();
+    } catch (e) {
+      AppLogger.log(e);
+    }
+    return;
+  }
+
   let notes: TRessources_Record;
   try {
     notes = await bot.bulletin.getDatas();

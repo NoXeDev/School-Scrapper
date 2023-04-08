@@ -15,6 +15,7 @@ export interface RichLog {
   quickCode?: number;
   moduleName: string;
   detail?: string;
+  emote?: string;
 }
 
 const RichLogSchema: JSONSchemaType<RichLog> = {
@@ -25,6 +26,7 @@ const RichLogSchema: JSONSchemaType<RichLog> = {
     moduleName: { type: "string" },
     quickCode: { type: "integer", nullable: true },
     detail: { type: "string", nullable: true },
+    emote: { type: "string", nullable: true },
   },
   required: ["message", "moduleName", "type"],
 };
@@ -79,6 +81,9 @@ export class AppLogger {
         break;
       }
     }
+    if (content.emote) {
+      emote = content.emote;
+    }
 
     const rawStr = `${emote} [${new Date().toLocaleString()}] - [${content.moduleName}]${
       content.quickCode ? "(" + content.quickCode + ")" : ""
@@ -89,9 +94,9 @@ export class AppLogger {
     }`;
 
     console.log(rawStr); // Log into console
-    await fs.promises.appendFile(this.savePath + "/main.txt", rawStr, "utf-8"); // Log into logfile
+    await fs.promises.appendFile(this.savePath + "/main.txt", rawStr + "\n", "utf-8"); // Log into logfile
     if (netLog) {
-      this.webhook_log(rawStr); // Log into webhook (only if option is enable)
+      await this.webhook_log(rawStr); // Log into webhook (only if option is enable)
     }
   }
 
