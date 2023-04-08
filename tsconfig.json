@@ -18,5 +18,5 @@
       "esModuleInterop": true
     },
     "include": ["**/*"],
-    "exclude": ["node_modules", "**/*.spec.ts", "dist"]
+    "exclude": ["node_modules", "**/*.spec.ts", "dist", "scripts"]
 }

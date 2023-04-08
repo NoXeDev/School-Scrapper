@@ -42,6 +42,25 @@ class Bot {
       this.DBManager.save(await this.bulletin.getDatas());
     }
 
+    process.on("uncaughtException", (err) => {
+      AppLogger.log({
+        message: "Uncaught global exception",
+        type: ELogType.ERROR,
+        moduleName: this.constructor.name,
+        quickCode: -1,
+        detail: err.name + " " + err.message,
+      });
+    });
+
+    if (process.argv.includes("update-ok")) {
+      await AppLogger.log({
+        message: "App was successfully updated to the version : " + process.versions,
+        moduleName: this.constructor.name,
+        type: ELogType.INFO,
+        quickCode: 0,
+      });
+    }
+
     this.shed.bindAJob("Check_New_Notes", "*/5 * * * *", async () => await EachFivesMinutes(this));
     await AppLogger.log({
       message: "Service bind thought Scheduler !",
@@ -108,16 +127,6 @@ async function EachFivesMinutes(bot: Bot): Promise<void> {
 
 // Main ASYNC WRAPPER
 (async () => {
-  process.on("uncaughtException", (err) => {
-    AppLogger.log({
-      message: "Uncaught global exception",
-      type: ELogType.ERROR,
-      moduleName: "App",
-      quickCode: -1,
-      detail: err.name + " " + err.message,
-    });
-  });
-
   const bot: Bot = new Bot();
   await bot._run();
 })();

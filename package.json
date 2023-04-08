@@ -1,14 +1,15 @@
 {
   "name": "school-scrapper",
-  "version": "0.1",
+  "version": "0.0.1",
   "description": "A simple app that fetch school notes and make a request on a discord webhook.",
   "scripts": {
     "build-tsc": "npm run lint && rimraf dist/ && tsc",
     "webpack": "webpack --mode development",
-    "build-prod": "npm run lint && rimraf dist/ && webpack --mode production",
+    "build-prod": "rimraf dist/ && webpack --mode production",
     "start": "npm run webpack && node dist/bundle.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint src/**/*.ts"
+    "lint": "eslint src/**/*.ts",
+    "deploy-prod": "rimraf dist/ && npm run webpack && node ./scripts/deploy.js --install"
   },
   "repository": {
     "type": "git",
