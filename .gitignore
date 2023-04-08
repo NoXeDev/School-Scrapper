@@ -37,3 +37,6 @@ config.json
 
 # APP DATABASE
 /database
+
+yarn.lock
+package-lock.json
