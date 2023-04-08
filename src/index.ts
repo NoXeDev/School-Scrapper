@@ -8,6 +8,7 @@ import storage from "./core/storage.js";
 import { TRessources_Record, IBulletin_Ressource, IBulletin_Evaluation } from "./common/bulletin_interfaces.js";
 import { DiscordWebHook } from "./core/request.js";
 import Updater from "./core/updater.js";
+import packageJson from "../package.json";
 
 class Bot {
   public loader: cfgLoader<IGlobalCfg>;
@@ -59,7 +60,7 @@ class Bot {
 
     if (process.argv.includes("update-ok")) {
       await AppLogger.log({
-        message: "App was successfully updated to the version : " + process.versions,
+        message: "App was successfully updated to the version : " + packageJson.version,
         moduleName: this.constructor.name,
         type: ELogType.INFO,
         quickCode: 0,
