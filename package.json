@@ -1,6 +1,6 @@
 {
   "name": "school-scrapper",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A simple app that fetch school notes and make a request on a discord webhook.",
   "scripts": {
     "build-tsc": "npm run lint && rimraf dist/ && tsc",
