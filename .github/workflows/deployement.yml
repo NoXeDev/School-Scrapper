@@ -1,0 +1,30 @@
+name: "Deploy project"
+
+on: workflow_dispatch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: 'Bumper Bot'
+        id: version-bump
+        uses: 'phips28/gh-action-bump-version@master'
+        with:
+          commit-message: 'CI: bumps version to {{version}}'
+          bump-policy: 'ignore'
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+
+      - name: 'Get Previous tag'
+        id: previoustag
+        uses: "WyriHaximus/github-action-get-previous-tag@v1"
+        with:
+          fallback: 1.0.0
+
+      - name: 'release'
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ steps.previoustag.outputs.tag }}
+        
