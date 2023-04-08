@@ -111,6 +111,14 @@ async function update() {
     }
   }
 
+  console.log("[*] - Install dependecies...")
+  try {
+    cp.execSync("npm install", { stdio: "ignore" });
+  } catch {
+    console.error("[X] - Failed to install dependencies");
+    process.exit(-1);
+  }
+
   console.log("[*] - Restart updated application")
   try {
     cp.execSync(`pm2 restart ${rootPackageJson["name"]} -- update-ok`)
