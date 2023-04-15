@@ -1,6 +1,17 @@
 name: "Deploy project"
 
-on: workflow_dispatch
+on: 
+  workflow_dispatch:
+    inputs:
+      flush-db:
+        description: "Flush database"
+        required: false
+        type: boolean
+      flush-logs:
+        description: "Flush logs files"
+        required: false
+        type: boolean
+
 
 jobs:
   deploy:
@@ -27,4 +38,5 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           tag: ${{ steps.previoustag.outputs.tag }}
+          body: ${{ format('{0}/{1}', inputs.flush-db, inputs.flush-logs) }}
         

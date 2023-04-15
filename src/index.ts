@@ -59,8 +59,17 @@ class Bot {
     });
 
     if (process.argv.includes("update-ok")) {
+      let extensionStr = "";
+      if (process.argv.includes("update-db-flush")) {
+        extensionStr += "Database was flushed ! ";
+      }
+
+      if (process.argv.includes("update-logs-flush")) {
+        extensionStr += "Logs was flushed ! ";
+      }
+
       await AppLogger.log({
-        message: "App was successfully updated to the version : " + packageJson.version,
+        message: "App was successfully updated to the version : " + packageJson.version + " " + extensionStr,
         moduleName: this.constructor.name,
         type: ELogType.INFO,
         quickCode: 0,
@@ -79,11 +88,11 @@ class Bot {
 }
 
 async function EachFivesMinutes(bot: Bot): Promise<void> {
-  if (
-    await Updater.checkForUpdates().catch((e) => {
-      AppLogger.log(e);
-    })
-  ) {
+  const cfg = await Updater.checkForUpdates().catch((e) => {
+    AppLogger.log(e);
+  });
+
+  if (cfg) {
     await AppLogger.log({
       message: "An update is available... Updating...",
       moduleName: "Updater",
@@ -91,7 +100,7 @@ async function EachFivesMinutes(bot: Bot): Promise<void> {
       emote: "ℹ️",
     });
     try {
-      await Updater.update();
+      await Updater.update(cfg);
     } catch (e) {
       AppLogger.log(e);
     }
