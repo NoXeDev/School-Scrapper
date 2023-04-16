@@ -23,7 +23,7 @@ class Bot {
   constructor() {
     this.loader = new cfgLoader<IGlobalCfg>(appconfig_schema);
     this.shed = new Sheduler();
-    this.DBManager = new storage("test");
+    this.DBManager = new storage("bulletin");
   }
 
   async _run() {

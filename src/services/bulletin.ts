@@ -161,7 +161,42 @@ export default class Bulletin {
     }
 
     if (datas.data["relevé"]) {
-      if (datas.data["relevé"]["ressources"]) {
+      if (datas.data["semestres"] && Array.isArray(datas.data["semestres"])) {
+        const resolvedReturn: TRessources_Record = {};
+        for (let i = 0; i < datas.data["semestres"].length; i++) {
+          const semestre: object = datas.data["semestres"][i];
+          if (!semestre["formsemestre_id"]) break;
+          const postURL: string =
+            this.service_url +
+            "/services/data.php?q=" +
+            encodeURIComponent("relevéEtudiant") +
+            "&semestre=" +
+            semestre["formsemestre_id"];
+
+          const res: AxiosResponse<any, any> = await axios
+            .post(postURL, null, {
+              headers: { Cookie: "PHPSESSID=" + this.sessid },
+            })
+            .catch((e) => {
+              const err: AxiosError = e as AxiosError;
+              throw {
+                message: "Axios error",
+                moduleName: this.constructor.name,
+                type: ELogType.ERROR,
+                detail: err.message,
+              };
+            });
+
+          if (res.data["relevé"] && res.data["relevé"]["ressources"] && this.dataValidator(res.data["relevé"]["ressources"])) {
+            const elements: TRessources_Record = res.data["relevé"]["ressources"] as TRessources_Record;
+            for (const e of Object.entries(elements)) {
+              e[1].semestre = i;
+            }
+            Object.assign(resolvedReturn, elements);
+          }
+        }
+        return resolvedReturn;
+      } else if (datas.data["relevé"]["ressources"]) {
         const rawRessources: object = datas.data["relevé"]["ressources"];
         if (this.dataValidator(rawRessources)) {
           return rawRessources as TRessources_Record;
@@ -174,49 +209,11 @@ export default class Bulletin {
           };
         }
       } else {
-        // This section is for, when there more than one semestre
-        if (datas.data["semestres"] && Array.isArray(datas.data["semestres"])) {
-          const resolvedReturn: TRessources_Record = {};
-          for (let i = 0; i < datas.data["semestres"].length; i++) {
-            const semestre: object = datas.data["semestres"][i];
-            if (!semestre["formsemestre_id"]) break;
-            const postURL: string =
-              this.service_url +
-              "/services/data.php?q=" +
-              encodeURIComponent("relevéEtudiant") +
-              "&semestre=" +
-              semestre["formsemestre_id"];
-
-            const res: AxiosResponse<any, any> = await axios
-              .post(postURL, null, {
-                headers: { Cookie: "PHPSESSID=" + this.sessid },
-              })
-              .catch((e) => {
-                const err: AxiosError = e as AxiosError;
-                throw {
-                  message: "Axios error",
-                  moduleName: this.constructor.name,
-                  type: ELogType.ERROR,
-                  detail: err.message,
-                };
-              });
-
-            if (res.data["relevé"] && res.data["relevé"]["ressources"] && this.dataValidator(res.data["relevé"]["ressources"])) {
-              const elements: TRessources_Record = res.data["relevé"]["ressources"] as TRessources_Record;
-              for (const e of Object.entries(elements)) {
-                e[1].semestre = i;
-              }
-              Object.assign(resolvedReturn, elements);
-            }
-          }
-          return resolvedReturn;
-        } else {
-          throw {
-            message: "Semestres paring failed",
-            moduleName: this.constructor.name,
-            type: ELogType.ERROR,
-          };
-        }
+        throw {
+          message: "Semestres paring failed",
+          moduleName: this.constructor.name,
+          type: ELogType.ERROR,
+        };
       }
     } else {
       throw {

@@ -5,10 +5,16 @@ import crypto from "crypto";
 export default class Storage<I> {
   private name: string;
   public firstEntry: boolean;
+  private debug: boolean;
 
   constructor(name: string) {
     this.name = name;
     this.firstEntry = false;
+
+    this.debug = false;
+    if (!process.env.NODE_ENV || process.env.NODE_ENV == "debug") {
+      this.debug = true;
+    }
 
     if (!fsSync.existsSync("./database/")) {
       fs.mkdir("./database/");
@@ -35,7 +41,7 @@ export default class Storage<I> {
     metadatas[this.name] = dataHash;
     await fs.writeFile("./database/metadatas.json", JSON.stringify(metadatas));
 
-    await fs.writeFile("./database/" + this.name + ".json", JSON.stringify(datas));
+    await fs.writeFile("./database/" + this.name + ".json", JSON.stringify(datas, null, this.debug ? 2 : undefined));
   }
 
   public async isSame(datas: I): Promise<boolean> {
