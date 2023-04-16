@@ -119,7 +119,7 @@ async function EachFivesMinutes(bot: Bot): Promise<void> {
     return;
   }
 
-  /*notes["R1.01"].evaluations.push({
+  /*notes["R2.02"].evaluations.push({
     coef: "string",
     date: "string",
     description: "string",

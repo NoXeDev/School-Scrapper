@@ -1,6 +1,7 @@
 import axios, { isAxiosError, AxiosError } from "axios";
 import { IBulletin_Evaluation, IBulletin_Ressource } from "../common/bulletin_interfaces.js";
 import { ELogType } from "./logger.js";
+import packageJson from "../../package.json";
 export class DiscordWebHook {
   private url: string;
   constructor(link: string) {
@@ -19,7 +20,7 @@ export class DiscordWebHook {
               url: "https://www.pinclipart.com/picdir/big/15-158087_academics-logo-youtube-png-clipart.png",
             },
             footer: {
-              text: "SchoolScrap © NoXeDev",
+              text: `SchoolScrap v${packageJson.version} © NoXeDev`,
               icon_url: "https://avatars.githubusercontent.com/u/34164412",
             },
             fields: [
