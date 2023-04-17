@@ -53,11 +53,12 @@ export default class Updater {
       } else {
         execSync("node ./scripts/deploy.js --update " + extensionStr);
       }
-    } catch {
+    } catch (e) {
       throw {
         message: "Updater failed to launch deploy script",
         type: ELogType.WARNING,
         moduleName: "Updater",
+        detail: e.toString(),
       };
     }
   }
