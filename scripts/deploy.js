@@ -85,14 +85,6 @@ async function update() {
     process.exit(-1)
   }
 
-  console.log("[*] - Npm generate production build...")
-  try {
-    cp.execSync("npm run build-prod", {stdio: "ignore"})
-  } catch {
-    console.error("[X] - Error : failed to generate production build")
-    process.exit(-1)
-  }
-
   console.log("[*] - Running additionnal tasks...")
   if(process.argv.includes("--flush-logs")) {
     console.log("[*] - Flushing logs...")
