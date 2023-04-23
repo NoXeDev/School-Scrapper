@@ -48,11 +48,7 @@ export default class Updater {
       if (config.flushLogs) {
         extensionStr += "--flush-logs";
       }
-      if (process.env.NODE_ENV && process.env.NODE_ENV == "production") {
-        execSync("node ../scripts/deploy.js --update " + extensionStr);
-      } else {
-        execSync("node ./scripts/deploy.js --update " + extensionStr);
-      }
+      execSync("node ./scripts/deploy.js --update " + extensionStr);
     } catch (e) {
       throw {
         message: "Updater failed to launch deploy script",
