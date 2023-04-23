@@ -113,7 +113,7 @@ async function update() {
 
   console.log("[*] - Restart updated application")
   try {
-    cp.execSync(`pm2 restart ${rootPackageJson["name"]} -- update-ok`)
+    cp.execSync(`pm2 restart ${rootPackageJson["name"]} -- update-ok ${process.argv.includes("--flush-database") ? "update-db-flush" : ""} ${process.argv.includes("--flush-logs") ? "update-logs-flush" : ""}`)
     console.log("[^] - Updated successfully !")
   } catch {
     console.error("[X] - Failed to restart updated application")
