@@ -141,8 +141,8 @@ async function EachFivesMinutes(bot: Bot): Promise<void> {
 
   if (!(await bot.DBManager.isSame(notes))) {
     const newNotes: (readonly [string, IBulletin_Ressource, IBulletin_Evaluation])[] = await bot.bulletin.notesCompares(
-      await bot.DBManager.load(),
       notes,
+      await bot.DBManager.load(),
     );
     for (const note of newNotes) {
       const resName: string = note[0];

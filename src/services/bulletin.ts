@@ -226,28 +226,19 @@ export default class Bulletin {
   }
 
   public async notesCompares(
-    notesA: TRessources_Record,
-    notesB: TRessources_Record,
+    newState: TRessources_Record,
+    oldState: TRessources_Record,
   ): Promise<(readonly [string, IBulletin_Ressource, IBulletin_Evaluation])[]> {
     const res: Array<readonly [string, IBulletin_Ressource, IBulletin_Evaluation]> = new Array<
       readonly [string, IBulletin_Ressource, IBulletin_Evaluation]
     >();
-    for (const [key, value] of Object.entries(notesA)) {
-      let arrSelector: IBulletin_Evaluation[];
-      let arrOther: IBulletin_Evaluation[];
-      if (value.evaluations.length !== notesB[key].evaluations.length) {
-        if (value.evaluations.length > notesB[key].evaluations.length) {
-          arrSelector = value.evaluations;
-          arrOther = notesB[key].evaluations;
-        } else {
-          arrSelector = notesB[key].evaluations;
-          arrOther = value.evaluations;
-        }
-        for (let i = 0; i < arrSelector.length; i++) {
-          if (arrSelector[i]?.id === arrOther[i]?.id) {
+    for (const [key, value] of Object.entries(newState)) {
+      if (value.evaluations.length !== oldState[key].evaluations.length) {
+        for (let i = 0; i < value.evaluations.length; i++) {
+          if (value.evaluations[i]?.id === oldState[key].evaluations[i]?.id) {
             continue;
           } else {
-            res.push([key, value, arrSelector[i]]);
+            res.push([key, value, value.evaluations[i]]);
           }
         }
       } else {
