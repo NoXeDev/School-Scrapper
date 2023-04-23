@@ -49,7 +49,7 @@ export default class Updater {
         extensionStr += "--flush-logs";
       }
       if (process.env.NODE_ENV && process.env.NODE_ENV == "production") {
-        execSync("node ../scripts/deploy.js --update " + extensionStr, { stdio: "ignore" });
+        execSync("node ../scripts/deploy.js --update " + extensionStr);
       } else {
         execSync("node ./scripts/deploy.js --update " + extensionStr);
       }
