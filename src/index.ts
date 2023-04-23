@@ -27,6 +27,36 @@ class Bot {
   }
 
   async _run() {
+    process.on("uncaughtException", (err) => {
+      if (typeof err == "string") {
+        AppLogger.log({
+          message: "Uncaught global exception",
+          type: ELogType.ERROR,
+          moduleName: this.constructor.name,
+          quickCode: -1,
+          detail: err,
+        });
+      } else if (typeof err == "object") {
+        if (err.name && err.message) {
+          AppLogger.log({
+            message: "Uncaught global exception",
+            type: ELogType.ERROR,
+            moduleName: this.constructor.name,
+            quickCode: -1,
+            detail: err.name + " " + err.message,
+          });
+        } else {
+          AppLogger.log({
+            message: "Uncaught global exception",
+            type: ELogType.ERROR,
+            moduleName: this.constructor.name,
+            quickCode: -1,
+            detail: JSON.stringify(err),
+          });
+        }
+      }
+    });
+
     try {
       this.cfg = await this.loader.loadConfig("./config.json");
       this.AuthProvider = new cas2(this.cfg.cas2, this.cfg.credentials);
@@ -43,20 +73,6 @@ class Bot {
     if (this.DBManager.firstEntry) {
       this.DBManager.save(await this.bulletin.getDatas());
     }
-
-    process.on("uncaughtException", (err) => {
-      if (AppLogger.isRichLog(err)) {
-        AppLogger.log(err as unknown as RichLog);
-      } else {
-        AppLogger.log({
-          message: "Uncaught global exception",
-          type: ELogType.ERROR,
-          moduleName: this.constructor.name,
-          quickCode: -1,
-          detail: err.name + " " + err.message,
-        });
-      }
-    });
 
     if (process.argv.includes("update-ok")) {
       let extensionStr = "";

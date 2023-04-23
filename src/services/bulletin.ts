@@ -187,19 +187,44 @@ export default class Bulletin {
               };
             });
 
-          if (res.data["relevé"] && res.data["relevé"]["ressources"] && this.dataValidator(res.data["relevé"]["ressources"])) {
-            const elements: TRessources_Record = res.data["relevé"]["ressources"] as TRessources_Record;
-            for (const e of Object.entries(elements)) {
+          if (
+            res.data["relevé"] &&
+            res.data["relevé"]["ressources"] &&
+            this.dataValidator(res.data["relevé"]["ressources"]) &&
+            res.data["relevé"]["saes"] &&
+            this.dataValidator(res.data["relevé"]["saes"])
+          ) {
+            const ressources: TRessources_Record = res.data["relevé"]["ressources"] as TRessources_Record;
+            const saes: TRessources_Record = res.data["relevé"]["saes"] as TRessources_Record;
+            for (const e of Object.entries(ressources)) {
               e[1].semestre = i;
+              for (let l = 0; l < e[1].evaluations.length; l++) {
+                if (e[1].evaluations[l].note.moy == "~") {
+                  e[1].evaluations.splice(l, 1); // If there is not avg, then ignore it
+                }
+              }
             }
-            Object.assign(resolvedReturn, elements);
+            for (const e of Object.entries(saes)) {
+              e[1].semestre = i;
+              for (let l = 0; l < e[1].evaluations.length; l++) {
+                if (e[1].evaluations[l].note.moy == "~") {
+                  e[1].evaluations.splice(l, 1); // If there is not avg, then ignore it
+                }
+              }
+            }
+            Object.assign(resolvedReturn, ressources);
+            Object.assign(resolvedReturn, saes);
           }
         }
         return resolvedReturn;
-      } else if (datas.data["relevé"]["ressources"]) {
+      } else if (datas.data["relevé"]["ressources"] && datas.data["relevé"]["saes"]) {
         const rawRessources: object = datas.data["relevé"]["ressources"];
-        if (this.dataValidator(rawRessources)) {
-          return rawRessources as TRessources_Record;
+        const saes: object = datas.data["relevé"]["saes"];
+        if (this.dataValidator(rawRessources) && this.dataValidator(saes)) {
+          const resolvedReturn: TRessources_Record = {};
+          Object.assign(resolvedReturn, rawRessources);
+          Object.assign(resolvedReturn, saes);
+          return resolvedReturn;
         } else {
           throw {
             message: "Service unknown error",

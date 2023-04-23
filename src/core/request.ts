@@ -14,10 +14,12 @@ export class DiscordWebHook {
       await axios.post(this.url, {
         embeds: [
           {
-            title: "Nouvelle note !",
-            color: 48770,
+            title: /(^SAE.*$)|(^P.*$)/.test(resName) ? "Nouvelle note de saé !" : "Nouvelle note !",
+            color: /(^SAE.*$)|(^P.*$)/.test(resName) ? 0xc4b000 : 48770,
             thumbnail: {
-              url: "https://www.pinclipart.com/picdir/big/15-158087_academics-logo-youtube-png-clipart.png",
+              url: /(^SAE.*$)|(^P.*$)/.test(resName)
+                ? "https://i.ibb.co/Y7SxYqP/pngfind-com-mechanic-png-3137362.png"
+                : "https://www.pinclipart.com/picdir/big/15-158087_academics-logo-youtube-png-clipart.png",
             },
             footer: {
               text: `SchoolScrap v${packageJson.version} © NoXeDev`,
@@ -29,12 +31,12 @@ export class DiscordWebHook {
                 value: newNote.description,
               },
               {
-                name: "Semestre",
-                value: ressource.semestre != undefined ? (ressource.semestre + 1).toString() : "Le seul disponible",
+                name: resName.includes("SAE") ? "Saé" : "Ressource",
+                value: resName + " - " + ressource.titre,
               },
               {
-                name: "Ressource",
-                value: resName + " - " + ressource.titre,
+                name: "Semestre",
+                value: ressource.semestre != undefined ? (ressource.semestre + 1).toString() : "Le seul disponible",
               },
               {
                 name: "Coef",

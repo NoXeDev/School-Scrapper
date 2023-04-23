@@ -21,7 +21,7 @@ export interface IBulletin_Evaluation {
 }
 
 export interface IBulletin_Ressource {
-  code_apogee: string;
+  code_apogee?: string;
   evaluations: Array<IBulletin_Evaluation>;
   id: number;
   titre: string;
@@ -33,10 +33,10 @@ const JTDBulletin: JSONSchemaType<TRessources_Record> = {
   type: "object",
   propertyNames: { type: "string" },
   patternProperties: {
-    "^R": {
+    "(^R.*$)|(^SAE.*$)|(^P.*$)": {
       type: "object",
       properties: {
-        code_apogee: { type: "string" },
+        code_apogee: { type: "string", nullable: true },
         evaluations: {
           type: "array",
           items: {
@@ -74,9 +74,10 @@ const JTDBulletin: JSONSchemaType<TRessources_Record> = {
         url: { type: "string" },
         semestre: { type: "number", nullable: true },
       },
-      required: ["code_apogee", "evaluations", "id", "titre", "url"],
+      required: ["evaluations", "id", "titre", "url"],
     },
   },
+  additionalProperties: false,
   required: [],
 };
 
