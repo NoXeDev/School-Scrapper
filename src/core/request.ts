@@ -18,8 +18,8 @@ export class DiscordWebHook {
             color: /(^SAE.*$)|(^P.*$)/.test(resName) ? 0xc4b000 : 48770,
             thumbnail: {
               url: /(^SAE.*$)|(^P.*$)/.test(resName)
-                ? "https://i.ibb.co/Y7SxYqP/pngfind-com-mechanic-png-3137362.png"
-                : "https://www.pinclipart.com/picdir/big/15-158087_academics-logo-youtube-png-clipart.png",
+                ? "https://assets.onlinelabels.com/images/clip-art/jean_victor_balin/jean_victor_balin_icon_project.png"
+                : "https://cdn3.iconfinder.com/data/icons/online-education-v-1-1/64/line_color-16-512.png",
             },
             footer: {
               text: `SchoolScrap v${packageJson.version} © NoXeDev`,
