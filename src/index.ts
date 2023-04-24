@@ -130,7 +130,7 @@ async function EachFivesMinutes(bot: Bot): Promise<void> {
     if (AppLogger.isRichLog(e)) {
       await AppLogger.log(e as RichLog);
     } else {
-      await AppLogger.log(e?.toString());
+      await AppLogger.log(JSON.stringify(e));
     }
     return;
   }
