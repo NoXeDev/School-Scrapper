@@ -1,4 +1,4 @@
-import axios, { AxiosResponse } from "axios";
+import axios, { AxiosError, AxiosResponse } from "axios";
 import { HTMLElement, parse } from "node-html-parser";
 import { ELogType } from "../core/logger.js";
 
@@ -45,13 +45,22 @@ export default class CAS2 {
         this.config.services[service] + "/services/doAuth.php?href=" + encodeURIComponent(this.config.services[service] + "/"),
       );
 
-    const executionRes: AxiosResponse<any, any> = await axios.get(urlCFG, {
-      headers: { Cookie: "TGC=" + this.tgc },
-      maxRedirects: 0,
-      validateStatus: function (status: number): boolean {
-        return status == 302 || status == 200;
-      },
-    });
+    const executionRes: AxiosResponse<any, any> = await axios
+      .get(urlCFG, {
+        headers: { Cookie: "TGC=" + this.tgc },
+        maxRedirects: 0,
+        validateStatus: function (status: number): boolean {
+          return status == 302 || status == 200;
+        },
+      })
+      .catch((err) => {
+        throw {
+          message: "Axios failed to fetch CAS2",
+          moduleName: this.constructor.name,
+          type: ELogType.CRITIAL,
+          detail: (err as AxiosError).message,
+        };
+      });
 
     // This condition mean that the TGC token that we previously fetch (if so) is still valid
     if (executionRes.status == 302 && typeof executionRes.headers["location"] == "string") {
@@ -96,6 +105,7 @@ export default class CAS2 {
             message: "Error with request",
             moduleName: this.constructor.name,
             type: ELogType.CRITIAL,
+            detail: (err as AxiosError).message,
           };
         }
       });

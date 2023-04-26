@@ -1,5 +1,5 @@
 import CAS2, { ICAS2AuthInfos, ECAS2_SERVICES } from "./cas2.js";
-import { ELogType } from "../core/logger.js";
+import { AppLogger, ELogType } from "../core/logger.js";
 import axios, { AxiosResponse, AxiosError, isAxiosError } from "axios";
 import ajv, { ValidateFunction } from "ajv";
 import { TRessources_Record, JTDBulletin, IBulletin_Ressource, IBulletin_Evaluation } from "../common/bulletin_interfaces.js";
@@ -59,13 +59,17 @@ export default class Bulletin {
           }
         });
     } catch (e) {
-      throw {
-        message: "Service unknown error or CAS2 service error",
-        moduleName: this.constructor.name,
-        type: ELogType.ERROR,
-        quickCode: ELogQuickErrCode.UNKNOWN_ERROR,
-        detail: e,
-      };
+      if (AppLogger.isRichLog(e)) {
+        throw e;
+      } else {
+        throw {
+          message: "getAuthInfos failed with an unknown err",
+          moduleName: this.constructor.name,
+          type: ELogType.ERROR,
+          quickCode: ELogQuickErrCode.UNKNOWN_ERROR,
+          detail: JSON.stringify(e),
+        };
+      }
     }
 
     this.service_url = AuthInfos.ServiceRootUrl;
