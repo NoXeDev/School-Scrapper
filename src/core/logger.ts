@@ -1,6 +1,7 @@
 import axios from "axios";
 import fs from "fs";
 import Ajv, { ValidateFunction, JSONSchemaType } from "ajv";
+import packageJson from "../../package.json";
 
 export enum ELogType {
   INFO,
@@ -85,8 +86,8 @@ export class AppLogger {
       emote = content.emote;
     }
 
-    const rawStr = `${emote} [${new Date().toLocaleString()}] - [${content.moduleName}]${
-      content.quickCode ? "(" + content.quickCode + ")" : ""
+    const rawStr = `${emote} [${new Date().toLocaleString()}] - [${content.moduleName} - v${packageJson.version}]${
+      content.quickCode ? " (" + content.quickCode + ")" : ""
     } :  ${content.message}${
       content.detail
         ? `\nDetails :\n \`${typeof content.detail == "object" ? JSON.stringify(content.detail) : content.detail}\``
