@@ -4,13 +4,18 @@ import { ELogType } from "./logger.js";
 import packageJson from "../../package.json";
 export class DiscordWebHook {
   private url: string;
-  constructor(link: string) {
+  private ping_prefix: null | string;
+  constructor(link: string, ping_prefix?: string) {
     this.url = link;
+    this.ping_prefix = ping_prefix ? ping_prefix : null;
   }
 
   public async post(resName: string, newNote: IBulletin_Evaluation, ressource: IBulletin_Ressource, UEaffectation: string) {
     try {
-      await axios.post(this.url, { content: "<@&1093971767237812366>" });
+      if (this.ping_prefix) {
+        await axios.post(this.url, { content: this.ping_prefix });
+      }
+
       await axios.post(this.url, {
         embeds: [
           {

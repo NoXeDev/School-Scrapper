@@ -21,11 +21,13 @@ export default class Bulletin {
   private service_url: string;
   private ajv: ajv;
   private dataValidator: ValidateFunction;
-  constructor(AuthProvider: CAS2) {
+  private semester_target?: number[] | null;
+  constructor(AuthProvider: CAS2, semester_target?: number[]) {
     this.isAuth = false;
     this.cas2_auth = AuthProvider;
     this.ajv = new ajv();
     this.dataValidator = this.ajv.compile(JTDBulletin);
+    this.semester_target = semester_target ? semester_target : null;
   }
 
   public async doAuth(): Promise<void> {
@@ -168,6 +170,11 @@ export default class Bulletin {
       if (datas.data["semestres"] && Array.isArray(datas.data["semestres"])) {
         const resolvedReturn: TRessources_Record = {};
         for (let i = 0; i < datas.data["semestres"].length; i++) {
+          if (this.semester_target) {
+            if (!this.semester_target.includes(datas.data["semestres"][i]["semestre_id"])) {
+              continue;
+            }
+          }
           const semestre: object = datas.data["semestres"][i];
           if (!semestre["formsemestre_id"]) break;
           const postURL: string =
@@ -201,7 +208,7 @@ export default class Bulletin {
             const ressources: TRessources_Record = res.data["relevé"]["ressources"] as TRessources_Record;
             const saes: TRessources_Record = res.data["relevé"]["saes"] as TRessources_Record;
             for (const e of Object.entries(ressources)) {
-              e[1].semestre = i;
+              e[1].semestre = res.data["relevé"]["semestre"]["numero"];
               for (let l = 0; l < e[1].evaluations.length; l++) {
                 if (e[1].evaluations[l].note.moy == "~") {
                   e[1].evaluations.splice(l, 1); // If there is not avg, then ignore it
@@ -209,7 +216,7 @@ export default class Bulletin {
               }
             }
             for (const e of Object.entries(saes)) {
-              e[1].semestre = i;
+              e[1].semestre = res.data["relevé"]["semestre"]["numero"];
               for (let l = 0; l < e[1].evaluations.length; l++) {
                 if (e[1].evaluations[l].note.moy == "~") {
                   e[1].evaluations.splice(l, 1); // If there is not avg, then ignore it

@@ -6,6 +6,8 @@ export interface IGlobalCfg {
   cas2: ICAS2config;
   webhook: string;
   fallback_webhook?: string;
+  ping_prefix?: string;
+  semester_target?: number[];
 }
 
 const JTD_AppConfig: JTDSchemaType<IGlobalCfg> = {
@@ -26,6 +28,12 @@ const JTD_AppConfig: JTDSchemaType<IGlobalCfg> = {
   },
   optionalProperties: {
     fallback_webhook: { type: "string" },
+    ping_prefix: { type: "string" },
+    semester_target: {
+      elements: {
+        type: "int8",
+      },
+    },
   },
 };
 

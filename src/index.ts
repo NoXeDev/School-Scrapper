@@ -60,8 +60,8 @@ class Bot {
     try {
       this.cfg = await this.loader.loadConfig("./config.json");
       this.AuthProvider = new cas2(this.cfg.cas2, this.cfg.credentials);
-      this.bulletin = new Bulletin(this.AuthProvider);
-      this.discord = new DiscordWebHook(this.cfg.webhook);
+      this.bulletin = new Bulletin(this.AuthProvider, this.cfg.semester_target);
+      this.discord = new DiscordWebHook(this.cfg.webhook, this.cfg.ping_prefix);
       if (this.cfg.fallback_webhook) {
         await AppLogger.setWebHookLog(this.cfg.fallback_webhook);
       }
@@ -135,7 +135,7 @@ async function EachFivesMinutes(bot: Bot): Promise<void> {
     return;
   }
 
-  /*notes["R2.02"].evaluations.push({
+  notes["R3.02"].evaluations.push({
     coef: "string",
     date: "string",
     description: "string",
@@ -153,7 +153,7 @@ async function EachFivesMinutes(bot: Bot): Promise<void> {
       UEEE: 1,
     },
     url: "string",
-  });*/
+  });
 
   if (!(await bot.DBManager.isSame(notes))) {
     const newNotes: (readonly [string, IBulletin_Ressource, IBulletin_Evaluation])[] = await bot.bulletin.notesCompares(

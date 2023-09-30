@@ -10,7 +10,7 @@
       "outDir": "./dist",
       "typeRoots": ["./node_modules/@types"],
       "types": ["node"],
-      "moduleResolution": "node",
+      "moduleResolution": "Node16",
       "declarationMap": true,
       "inlineSourceMap": true,
       "inlineSources": true,

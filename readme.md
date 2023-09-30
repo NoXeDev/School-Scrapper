@@ -1,1 +1,1 @@
-# README SOON
+# simple school-scrapper, dm for details
