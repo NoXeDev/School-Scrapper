@@ -135,7 +135,7 @@ async function EachFivesMinutes(bot: Bot): Promise<void> {
     return;
   }
 
-  notes["R3.02"].evaluations.push({
+  /*notes["R3.02"].evaluations.push({
     coef: "string",
     date: "string",
     description: "string",
@@ -153,7 +153,7 @@ async function EachFivesMinutes(bot: Bot): Promise<void> {
       UEEE: 1,
     },
     url: "string",
-  });
+  });*/
 
   if (!(await bot.DBManager.isSame(notes))) {
     const newNotes: (readonly [string, IBulletin_Ressource, IBulletin_Evaluation])[] = await bot.bulletin.notesCompares(
