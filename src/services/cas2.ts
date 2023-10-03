@@ -2,10 +2,6 @@ import axios, { AxiosError, AxiosResponse } from "axios";
 import { HTMLElement, parse } from "node-html-parser";
 import { ELogType } from "../core/logger.js";
 
-export enum ECAS2_SERVICES {
-  BULLETIN,
-}
-
 export interface ICAS2AuthInfos {
   Auth_Service_Url: string;
   ServiceRootUrl: string;
@@ -16,22 +12,22 @@ export interface ICredentials {
   password: string;
 }
 
-export interface ICAS2config {
-  loginPath: string;
-  services: Array<string>;
-}
-
 export default class CAS2 {
   private tgc: string;
   private creds: ICredentials;
-  private config: ICAS2config;
 
-  constructor(config: ICAS2config, creds: ICredentials) {
+  constructor(creds: ICredentials) {
     this.creds = creds;
-    this.config = config;
   }
 
-  public async getAuthInfos(service: ECAS2_SERVICES): Promise<ICAS2AuthInfos> {
+  public async getAuthInfos(): Promise<ICAS2AuthInfos> {
+    if (process.env.BULLETIN == undefined || process.env.CAS2 == undefined) {
+      throw {
+        message: "Missing environment variable",
+        moduleName: this.constructor.name,
+        type: ELogType.CRITIAL,
+      };
+    }
     const headers = {
       "Content-Type": "application/x-www-form-urlencoded",
       "User-Agent":
@@ -39,11 +35,9 @@ export default class CAS2 {
     };
 
     const urlCFG =
-      this.config.loginPath +
+      process.env.CAS2 +
       "?service=" +
-      encodeURIComponent(
-        this.config.services[service] + "/services/doAuth.php?href=" + encodeURIComponent(this.config.services[service] + "/"),
-      );
+      encodeURIComponent(process.env.BULLETIN + "/services/doAuth.php?href=" + encodeURIComponent(process.env.BULLETIN + "/"));
 
     const executionRes: AxiosResponse<any, any> = await axios
       .get(urlCFG, {
@@ -66,7 +60,7 @@ export default class CAS2 {
     if (executionRes.status == 302 && typeof executionRes.headers["location"] == "string") {
       return {
         Auth_Service_Url: executionRes.headers["location"],
-        ServiceRootUrl: this.config.services[service],
+        ServiceRootUrl: process.env.BULLETIN,
       };
     }
 
@@ -113,7 +107,7 @@ export default class CAS2 {
     if (loginRes.headers["location"] && loginRes.headers["set-cookie"]) {
       const returnValue: ICAS2AuthInfos = {
         Auth_Service_Url: loginRes.headers["location"],
-        ServiceRootUrl: this.config.services[service],
+        ServiceRootUrl: process.env.BULLETIN,
       };
       this.tgc = loginRes.headers["set-cookie"][0].split(";")[0].replace("TGC=", "");
 

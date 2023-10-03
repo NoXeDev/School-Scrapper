@@ -1,3 +1,4 @@
+import "dotenv/config";
 import Bulletin from "./services/bulletin.js";
 import cas2 from "./services/cas2.js";
 import Sheduler from "./scheduler.js";
@@ -59,7 +60,7 @@ class Bot {
 
     try {
       this.cfg = await this.loader.loadConfig("./config.json");
-      this.AuthProvider = new cas2(this.cfg.cas2, this.cfg.credentials);
+      this.AuthProvider = new cas2(this.cfg.credentials);
       this.bulletin = new Bulletin(this.AuthProvider, this.cfg.semester_target);
       this.discord = new DiscordWebHook(this.cfg.webhook, this.cfg.ping_prefix);
       if (this.cfg.fallback_webhook) {

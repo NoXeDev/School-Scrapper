@@ -1,4 +1,4 @@
-import CAS2, { ICAS2AuthInfos, ECAS2_SERVICES } from "./cas2.js";
+import CAS2, { ICAS2AuthInfos } from "./cas2.js";
 import { AppLogger, ELogType } from "../core/logger.js";
 import axios, { AxiosResponse, AxiosError, isAxiosError } from "axios";
 import ajv, { ValidateFunction } from "ajv";
@@ -34,7 +34,7 @@ export default class Bulletin {
     let doAuthRes: AxiosResponse<any, any>;
     let AuthInfos: ICAS2AuthInfos;
     try {
-      AuthInfos = await this.cas2_auth.getAuthInfos(ECAS2_SERVICES.BULLETIN);
+      AuthInfos = await this.cas2_auth.getAuthInfos();
       doAuthRes = await axios
         .get(AuthInfos.Auth_Service_Url, {
           maxRedirects: 0,

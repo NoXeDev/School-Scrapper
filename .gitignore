@@ -34,6 +34,7 @@ lerna-debug.log*
 
 # APP CONFIG (except default template)
 config.json
+.env
 
 # APP DATABASE
 /database
