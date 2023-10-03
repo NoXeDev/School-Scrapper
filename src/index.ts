@@ -4,7 +4,7 @@ import cas2 from "./services/cas2.js";
 import Sheduler from "./scheduler.js";
 import cfgLoader from "./core/configLoader.js";
 import { AppLogger, ELogType, RichLog } from "./core/logger.js";
-import appconfig_schema, { IGlobalCfg } from "./common/app_config_schemas.js";
+import { retro_IGlobalCfg, retro_JTD_AppConfig } from "./common/app_config_schemas.js";
 import storage from "./core/storage.js";
 import { TRessources_Record, IBulletin_Ressource, IBulletin_Evaluation } from "./common/bulletin_interfaces.js";
 import { DiscordWebHook } from "./core/request.js";
@@ -12,8 +12,8 @@ import Updater from "./core/updater.js";
 import packageJson from "../package.json";
 
 class Bot {
-  public loader: cfgLoader<IGlobalCfg>;
-  public cfg: IGlobalCfg;
+  public loader: cfgLoader<retro_IGlobalCfg>;
+  public cfg: retro_IGlobalCfg;
   public AuthProvider: cas2;
   public bulletin: Bulletin;
   public shed: Sheduler;
@@ -22,7 +22,7 @@ class Bot {
   public logger: AppLogger;
 
   constructor() {
-    this.loader = new cfgLoader<IGlobalCfg>(appconfig_schema);
+    this.loader = new cfgLoader<retro_IGlobalCfg>(retro_JTD_AppConfig);
     this.shed = new Sheduler();
     this.DBManager = new storage("bulletin");
   }
