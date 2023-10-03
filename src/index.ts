@@ -135,26 +135,6 @@ async function EachFivesMinutes(bot: Bot): Promise<void> {
     return;
   }
 
-  /*notes["R3.02"].evaluations.push({
-    coef: "string",
-    date: "string",
-    description: "string",
-    evaluation_type: 0,
-    heure_debut: "string",
-    heure_fin: "string",
-    id: 0,
-    note: {
-      max: "string",
-      min: "string",
-      moy: "string",
-      value: "string",
-    },
-    poids: {
-      UEEE: 1,
-    },
-    url: "string",
-  });*/
-
   if (!(await bot.DBManager.isSame(notes))) {
     const newNotes: (readonly [string, IBulletin_Ressource, IBulletin_Evaluation])[] = await bot.bulletin.notesCompares(
       notes,
