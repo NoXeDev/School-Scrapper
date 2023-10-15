@@ -8,7 +8,8 @@
     "build-prod": "rimraf dist/ && webpack --mode production",
     "start": "yarn run webpack && node dist/bundle.js",
     "lint": "eslint src/**/*.ts",
-    "deploy-prod": "yarn run build-prod && node ./scripts/deploy.js --install"
+    "deploy-prod": "yarn run build-prod && node ./scripts/deploy.js --install",
+    "clear": "rimraf dist/ && rimraf database/ && rimraf logs/"
   },
   "repository": {
     "type": "git",
