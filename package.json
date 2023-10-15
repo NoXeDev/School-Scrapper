@@ -3,13 +3,12 @@
   "version": "1.0.8",
   "description": "A simple app that fetch school notes and make a request on a discord webhook.",
   "scripts": {
-    "build-tsc": "npm run lint && rimraf dist/ && tsc",
+    "build-tsc": "yarn run lint && rimraf dist/ && tsc",
     "webpack": "webpack --mode development",
     "build-prod": "rimraf dist/ && webpack --mode production",
-    "start": "npm run webpack && node dist/bundle.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "yarn run webpack && node dist/bundle.js",
     "lint": "eslint src/**/*.ts",
-    "deploy-prod": "rimraf dist/ && npm run webpack && node ./scripts/deploy.js --install"
+    "deploy-prod": "rimraf dist/ && yarn run webpack && node ./scripts/deploy.js --install"
   },
   "repository": {
     "type": "git",
@@ -23,14 +22,12 @@
   },
   "homepage": "https://github.com/NoXeDev/School-Scrapper#readme",
   "devDependencies": {
-    "@types/cron": "^2.0.0",
     "@types/node": "^18.11.18",
     "@typescript-eslint/eslint-plugin": "^5.48.0",
     "@typescript-eslint/parser": "^5.48.0",
     "eslint": "^8.31.0",
     "eslint-config-prettier": "^8.6.0",
     "eslint-plugin-prettier": "^4.2.1",
-    "nodemon": "^2.0.20",
     "prettier": "^2.8.1"
   },
   "dependencies": {
@@ -38,12 +35,13 @@
     "ajv-formats": "^2.1.1",
     "axios": "^1.2.2",
     "cron": "^2.1.0",
+    "esbuild-loader": "^3.0.1",
     "node-html-parser": "^6.1.4",
     "rimraf": "^3.0.2",
     "ts-node": "^10.9.1",
     "typescript": "^4.9.4",
-    "esbuild-loader": "^3.0.1",
     "webpack": "^5.78.0",
-    "webpack-cli": "^5.0.1"
+    "webpack-cli": "^5.0.1",
+    "yarn": "^1.22.19"
   }
 }

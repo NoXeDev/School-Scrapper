@@ -77,9 +77,9 @@ async function update() {
     process.exit(-1)
   }
 
-  console.log("[*] - Npm generate production build...")
+  console.log("[*] - Yarn generate production build...")
   try {
-    cp.execSync("npm run build-prod", {stdio: "ignore"})
+    cp.execSync("yarn run build-prod", {stdio: "ignore"})
   } catch {
     console.error("[X] - Error : failed to generate production build")
     process.exit(-1)
@@ -105,7 +105,7 @@ async function update() {
 
   console.log("[*] - Install dependecies...")
   try {
-    cp.execSync("npm install", { stdio: "ignore" });
+    cp.execSync("yarn install", { stdio: "ignore" });
   } catch {
     console.error("[X] - Failed to install dependencies");
     process.exit(-1);

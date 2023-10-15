@@ -1,23 +1,22 @@
 {
-    "compilerOptions": {
-      "module": "Node16",
-      "declaration": true,
-      "removeComments": true,
-      "emitDecoratorMetadata": true,
-      "experimentalDecorators": true,
-      "allowSyntheticDefaultImports": true,
-      "target": "ES2020",
-      "outDir": "./dist",
-      "typeRoots": ["./node_modules/@types"],
-      "types": ["node"],
-      "moduleResolution": "Node16",
-      "declarationMap": true,
-      "inlineSourceMap": true,
-      "inlineSources": true,
-      "strictNullChecks": true,
-      "esModuleInterop": true,
-      "resolveJsonModule": true
-    },
-    "include": ["**/*"],
-    "exclude": ["node_modules", "**/*.spec.ts", "dist", "scripts"]
+  "compilerOptions": {
+    "module": "Node16",
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "ES2020",
+    "outDir": "./dist",
+    "typeRoots": ["./node_modules/@types"],
+    "moduleResolution": "Node16",
+    "declarationMap": true,
+    "inlineSourceMap": true,
+    "inlineSources": true,
+    "strictNullChecks": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true
+  },
+  "include": ["**/*"],
+  "exclude": ["node_modules", "**/*.spec.ts", "dist", "scripts"]
 }
