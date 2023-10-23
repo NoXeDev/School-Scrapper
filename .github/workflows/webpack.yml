@@ -26,5 +26,5 @@ jobs:
 
     - name: Build
       run: |
-        npm install
-        npm run build-prod
+        yarn install
+        yarn run build-prod
