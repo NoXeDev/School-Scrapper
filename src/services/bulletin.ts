@@ -1,11 +1,12 @@
-import CAS2, { ICAS2AuthInfos } from "./cas2.js";
-import { AppLogger, ELogType } from "../core/logger.js";
+import { ICAS2AuthInfos } from "./cas2.js";
+import { ELogType } from "../core/logger.js";
 import axios, { AxiosResponse, AxiosError, isAxiosError } from "axios";
 import ajv, { ValidateFunction } from "ajv";
 import { TRessources_Record, JTDBulletin, IBulletin_Ressource, IBulletin_Evaluation } from "../common/bulletin_interfaces.js";
 
 enum ELogQuickErrCode {
   INVALID_AUTH = 1,
+  SESSID_EXPIRED,
   AUTH_REQUEST_ERROR,
   SERVICE_ERROR,
   BAD_DATAS,
@@ -15,68 +16,47 @@ enum ELogQuickErrCode {
 }
 
 export default class Bulletin {
-  public isAuth: boolean;
-  private sessid: string;
-  private cas2_auth: CAS2;
-  private service_url: string;
-  private ajv: ajv;
-  private dataValidator: ValidateFunction;
-  private semester_target?: number[] | null;
-  constructor(AuthProvider: CAS2, semester_target?: number[]) {
-    this.isAuth = false;
-    this.cas2_auth = AuthProvider;
-    this.ajv = new ajv();
-    this.dataValidator = this.ajv.compile(JTDBulletin);
-    this.semester_target = semester_target ? semester_target : null;
-  }
+  private static coreAjv: ajv = new ajv();
+  private static dataValidator: ValidateFunction = Bulletin.coreAjv.compile(JTDBulletin);
 
-  public async doAuth(): Promise<void> {
-    let doAuthRes: AxiosResponse<any, any>;
-    let AuthInfos: ICAS2AuthInfos;
-    try {
-      AuthInfos = await this.cas2_auth.getAuthInfos();
-      doAuthRes = await axios
-        .get(AuthInfos.Auth_Service_Url, {
-          maxRedirects: 0,
-          validateStatus: function (status: number): boolean {
-            return status == 302; // We wan't only this code, this is the only issue with a valid auth with CAS2
-          },
-        })
-        .catch((err) => {
-          if (err.response.status !== 302) {
-            throw {
-              message: "Invalid AUTH CAS2",
-              moduleName: this.constructor.name,
-              type: ELogType.ERROR,
-              quickCode: ELogQuickErrCode.INVALID_AUTH,
-            };
-          } else {
-            throw {
-              message: "Error with auth request",
-              moduleName: this.constructor.name,
-              type: ELogType.ERROR,
-              quickCode: ELogQuickErrCode.AUTH_REQUEST_ERROR,
-              detail: err,
-            };
-          }
-        });
-    } catch (e) {
-      if (AppLogger.isRichLog(e)) {
-        throw e;
-      } else {
-        throw {
-          message: "getAuthInfos failed with an unknown err",
-          moduleName: this.constructor.name,
-          type: ELogType.ERROR,
-          quickCode: ELogQuickErrCode.UNKNOWN_ERROR,
-          detail: JSON.stringify(e),
-        };
-      }
+  public static async doAuth(auth_infos: ICAS2AuthInfos): Promise<string> {
+    if (!process.env.BULLETIN) {
+      throw {
+        message: "Bulletin env var not set",
+        moduleName: this.constructor.name,
+        type: ELogType.CRITIAL,
+      };
     }
 
-    this.service_url = AuthInfos.ServiceRootUrl;
+    const doAuthRes = await axios
+      .get(auth_infos.Auth_Service_Url, {
+        maxRedirects: 0,
+        validateStatus: function (status: number): boolean {
+          return status == 302; // We wan't only this code, this is the only issue with a valid auth with CAS2
+        },
+      })
+      .catch((err) => {
+        if (err.response.status !== 302) {
+          throw {
+            message: "Invalid AUTH CAS2",
+            moduleName: this.constructor.name,
+            type: ELogType.ERROR,
+            quickCode: ELogQuickErrCode.INVALID_AUTH,
+          };
+        } else {
+          throw {
+            message: "Error with auth request",
+            moduleName: this.constructor.name,
+            type: ELogType.ERROR,
+            quickCode: ELogQuickErrCode.AUTH_REQUEST_ERROR,
+            detail: err,
+          };
+        }
+      });
+
+    let sessid: string;
     if (typeof doAuthRes.headers["set-cookie"] == "object") {
-      this.sessid = doAuthRes.headers["set-cookie"][doAuthRes.headers["set-cookie"].length - 1]
+      sessid = doAuthRes.headers["set-cookie"][doAuthRes.headers["set-cookie"].length - 1]
         .split(";")[0]
         .replace("PHPSESSID=", "");
     } else {
@@ -88,8 +68,8 @@ export default class Bulletin {
       };
     }
 
-    if (!(await this.__checkSessID())) {
-      this.sessid = "";
+    if (!(await Bulletin.__checkSessID(sessid, process.env.BULLETIN))) {
+      sessid = "";
       throw {
         message: "Invalid sessionID provided",
         moduleName: this.constructor.name,
@@ -98,24 +78,19 @@ export default class Bulletin {
         detail: "Please open an issue on the repo",
       };
     }
-
-    this.isAuth = true;
-    return;
+    return sessid;
   }
 
-  private async __checkSessID(): Promise<boolean> {
+  private static async __checkSessID(sessid: string, service_url: string): Promise<boolean> {
     let verifyAuthRes: AxiosResponse<any, any>;
     try {
-      verifyAuthRes = await axios.get(
-        this.service_url + "/services/doAuth.php?href=" + encodeURIComponent(this.service_url + "/"),
-        {
-          maxRedirects: 0,
-          validateStatus: function (status: number): boolean {
-            return status == 302; // We wan't only this http code, this is the only issue with a valid auth with CAS2
-          },
-          headers: { Cookie: "PHPSESSID=" + this.sessid },
+      verifyAuthRes = await axios.get(service_url + "/services/doAuth.php?href=" + encodeURIComponent(service_url + "/"), {
+        maxRedirects: 0,
+        validateStatus: function (status: number): boolean {
+          return status == 302; // We wan't only this http code, this is the only issue with a valid auth with CAS2
         },
-      );
+        headers: { Cookie: "PHPSESSID=" + sessid },
+      });
     } catch (e) {
       if (isAxiosError(e)) {
         const castedErr = e as AxiosError;
@@ -136,33 +111,32 @@ export default class Bulletin {
       }
     }
 
-    if (typeof verifyAuthRes.headers["location"] == "string" && !verifyAuthRes.headers["location"].startsWith(this.service_url)) {
+    if (typeof verifyAuthRes.headers["location"] == "string" && !verifyAuthRes.headers["location"].startsWith(service_url)) {
       return false;
     }
 
     return true;
   }
 
-  public async getDatas(): Promise<TRessources_Record> {
-    if (!this.isAuth) {
-      try {
-        await this.doAuth();
-      } catch (e) {
-        throw e;
-      }
+  public static async getDatas(sessid: string, semester_target?: [string]): Promise<TRessources_Record> {
+    if (!process.env.BULLETIN) {
+      throw {
+        message: "Bulletin env var not set",
+        moduleName: this.constructor.name,
+        type: ELogType.CRITIAL,
+      };
     }
-    const postURL: string = this.service_url + "/services/data.php?q=dataPremi%C3%A8reConnexion";
+    const postURL: string = process.env.BULLETIN + "/services/data.php?q=dataPremi%C3%A8reConnexion";
 
-    let datas: AxiosResponse<any, any> = await axios.post(postURL, null, { headers: { Cookie: "PHPSESSID=" + this.sessid } });
+    const datas: AxiosResponse<any, any> = await axios.post(postURL, null, { headers: { Cookie: "PHPSESSID=" + sessid } });
     if (datas.data?.redirect) {
-      if (!(await this.__checkSessID())) {
-        try {
-          await this.doAuth();
-          // retry
-          datas = await axios.post(postURL, null, { headers: { Cookie: "PHPSESSID=" + this.sessid } });
-        } catch (e) {
-          throw e;
-        }
+      if (!(await Bulletin.__checkSessID(sessid, process.env.BULLETIN))) {
+        throw {
+          message: "Sessid seems expired",
+          moduleName: this.constructor.name,
+          type: ELogType.WARNING,
+          quickCode: ELogQuickErrCode.SESSID_EXPIRED,
+        };
       }
     }
 
@@ -170,15 +144,15 @@ export default class Bulletin {
       if (datas.data["semestres"] && Array.isArray(datas.data["semestres"])) {
         const resolvedReturn: TRessources_Record = {};
         for (let i = 0; i < datas.data["semestres"].length; i++) {
-          if (this.semester_target) {
-            if (!this.semester_target.includes(datas.data["semestres"][i]["semestre_id"])) {
+          if (semester_target) {
+            if (!semester_target.includes(datas.data["semestres"][i]["semestre_id"])) {
               continue;
             }
           }
           const semestre: object = datas.data["semestres"][i];
           if (!semestre["formsemestre_id"]) break;
           const postURL: string =
-            this.service_url +
+            process.env.BULLETIN +
             "/services/data.php?q=" +
             encodeURIComponent("relevéEtudiant") +
             "&semestre=" +
@@ -186,7 +160,7 @@ export default class Bulletin {
 
           const res: AxiosResponse<any, any> = await axios
             .post(postURL, null, {
-              headers: { Cookie: "PHPSESSID=" + this.sessid },
+              headers: { Cookie: "PHPSESSID=" + sessid },
             })
             .catch((e) => {
               const err: AxiosError = e as AxiosError;
@@ -201,9 +175,9 @@ export default class Bulletin {
           if (
             res.data["relevé"] &&
             res.data["relevé"]["ressources"] &&
-            this.dataValidator(res.data["relevé"]["ressources"]) &&
+            Bulletin.dataValidator(res.data["relevé"]["ressources"]) &&
             res.data["relevé"]["saes"] &&
-            this.dataValidator(res.data["relevé"]["saes"])
+            Bulletin.dataValidator(res.data["relevé"]["saes"])
           ) {
             const ressources: TRessources_Record = res.data["relevé"]["ressources"] as TRessources_Record;
             const saes: TRessources_Record = res.data["relevé"]["saes"] as TRessources_Record;
@@ -231,7 +205,7 @@ export default class Bulletin {
       } else if (datas.data["relevé"]["ressources"] && datas.data["relevé"]["saes"]) {
         const rawRessources: object = datas.data["relevé"]["ressources"];
         const saes: object = datas.data["relevé"]["saes"];
-        if (this.dataValidator(rawRessources) && this.dataValidator(saes)) {
+        if (Bulletin.dataValidator(rawRessources) && Bulletin.dataValidator(saes)) {
           const resolvedReturn: TRessources_Record = {};
           Object.assign(resolvedReturn, rawRessources);
           Object.assign(resolvedReturn, saes);
@@ -261,7 +235,7 @@ export default class Bulletin {
     }
   }
 
-  public async notesCompares(
+  public static async notesCompares(
     newState: TRessources_Record,
     oldState: TRessources_Record,
   ): Promise<(readonly [string, IBulletin_Ressource, IBulletin_Evaluation])[]> {

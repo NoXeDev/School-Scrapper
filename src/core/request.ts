@@ -3,20 +3,20 @@ import { IBulletin_Evaluation, IBulletin_Ressource } from "../common/bulletin_in
 import { ELogType } from "./logger.js";
 import packageJson from "../../package.json";
 export class DiscordWebHook {
-  private url: string;
-  private ping_prefix: null | string;
-  constructor(link: string, ping_prefix?: string) {
-    this.url = link;
-    this.ping_prefix = ping_prefix ? ping_prefix : null;
-  }
-
-  public async post(resName: string, newNote: IBulletin_Evaluation, ressource: IBulletin_Ressource, UEaffectation: string) {
+  public static async post(
+    webhook_url: string,
+    resName: string,
+    newNote: IBulletin_Evaluation,
+    ressource: IBulletin_Ressource,
+    UEaffectation: string,
+    ping_prefix?: string,
+  ) {
     try {
-      if (this.ping_prefix) {
-        await axios.post(this.url, { content: this.ping_prefix });
+      if (ping_prefix) {
+        await axios.post(webhook_url, { content: ping_prefix });
       }
 
-      await axios.post(this.url, {
+      await axios.post(webhook_url, {
         embeds: [
           {
             title: /(^SAE.*$)|(^P.*$)/.test(resName) ? "Nouvelle note de saé !" : "Nouvelle note !",

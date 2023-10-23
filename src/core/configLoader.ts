@@ -19,10 +19,11 @@ export default class cfgLoader<inter> {
       rawdatas = await fs.readFile(pathCfg);
     } catch (e) {
       throw {
-        message: "Error when read configuration file.\n" + e,
+        message: "Error when read configuration file. ",
         type: ELogType.CRITIAL,
         moduleName: this.constructor.name,
         quickCode: 10,
+        detail: e,
       };
     }
 
@@ -34,10 +35,11 @@ export default class cfgLoader<inter> {
       if (this.compiler.message) {
         const errorMsg: string = this.compiler.message;
         throw {
-          message: "Error when parse JSON data : \n" + errorMsg,
+          message: "Error when read configuration file, JSON error",
           type: ELogType.CRITIAL,
           moduleName: this.constructor.name,
           quickCode: 11,
+          detail: errorMsg,
         };
       } else {
         throw {
