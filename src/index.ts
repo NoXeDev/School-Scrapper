@@ -1,13 +1,13 @@
 import "dotenv/config";
-import Bulletin from "./services/bulletin.js";
+//import Bulletin from "./services/bulletin.js";
 import CAS2, { ICAS2AuthInfos } from "./services/cas2.js";
 import Sheduler from "./core/scheduler.js";
 import cfgLoader from "./core/configLoader.js";
 import { AppLogger, ELogType, RichLog } from "./core/logger.js";
 import { IGlobalCfg, IInstanceCfg, JTD_AppConfig } from "./common/app_config_schemas.js";
 import storage from "./core/storage.js";
-import { TRessources_Record, IBulletin_Ressource, IBulletin_Evaluation } from "./common/bulletin_interfaces.js";
-import { DiscordWebHook } from "./core/request.js";
+import { TRessources_Record /*, IBulletin_Ressource, IBulletin_Evaluation*/ } from "./common/bulletin_interfaces.js";
+//import { DiscordWebHook } from "./core/request.js";
 import Updater from "./core/updater.js";
 
 enum EInstanceState {
@@ -109,10 +109,12 @@ class Core {
 
     // Shedule bind
     this.shed.bindAJob("Check_For_Update", "*/10 * * * *", async () => await Core.checkForUpdate()); // check for update
-    this.shed.bindAJob("Check_New_Notes", "*/5 * * * *", async () => await Core.scrapRoutine());
+    this.shed.bindAJob("Check_New_Notes", "*/5 * * * *", async () => await Core.scrapRoutine(), true); // check for new notes
+    this.shed.bindAJob("Error_Routine", "*/15 * * * *", async () => await Core.errorRoutine()); // error routine
   }
 
   public static async checkForUpdate() {
+    console.log("Check for update tick");
     const cfg = await Updater.checkForUpdates().catch((e) => {
       AppLogger.log(e);
     });
@@ -134,11 +136,11 @@ class Core {
   }
 
   public static async scrapRoutine() {
-    // TODO
+    console.log("scrapRoutine tick");
   }
 
   public static async errorRoutine() {
-    // TODO
+    console.log("errorRoutine tick");
   }
 }
 

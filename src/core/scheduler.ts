@@ -5,7 +5,7 @@ export default class Sheduler {
   constructor() {
     this.schedulesJob = new Map<string, CronJob>();
   }
-  public bindAJob(eventName: string, scheduleRule: string, callback: () => Promise<void>): void {
+  public bindAJob(eventName: string, scheduleRule: string, callback: () => Promise<void>, startnow = false): void {
     const job: CronJob = new CronJob(
       scheduleRule,
       async () => {
@@ -15,7 +15,7 @@ export default class Sheduler {
       true,
       "Europe/Paris",
       null,
-      true,
+      startnow,
     );
     this.schedulesJob.set(eventName, job);
   }
