@@ -13,8 +13,6 @@ export interface ICredentials {
 }
 
 export default class CAS2 {
-  private static tgc: string;
-
   public static async getAuthInfos(creds: ICredentials): Promise<ICAS2AuthInfos> {
     if (process.env.BULLETIN == undefined || process.env.CAS2 == undefined) {
       throw {
@@ -37,7 +35,6 @@ export default class CAS2 {
 
     const executionRes: AxiosResponse<any, any> = await axios
       .get(urlCFG, {
-        headers: { Cookie: "TGC=" + CAS2.tgc },
         maxRedirects: 0,
         validateStatus: function (status: number): boolean {
           return status == 302 || status == 200;
@@ -108,8 +105,6 @@ export default class CAS2 {
         Auth_Service_Url: loginRes.headers["location"],
         ServiceRootUrl: process.env.BULLETIN,
       };
-      CAS2.tgc = loginRes.headers["set-cookie"][0].split(";")[0].replace("TGC=", "");
-
       return returnValue;
     } else {
       throw {
