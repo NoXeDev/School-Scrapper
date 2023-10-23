@@ -67,7 +67,7 @@ class Core {
         await AppLogger.setWebHookLog(cfg.fallback_webhook);
       }
     } catch (e) {
-      AppLogger.log(e);
+      AppLogger.log(e as RichLog);
       process.exit(-1);
     }
 
@@ -89,7 +89,7 @@ class Core {
             process.exit(-1);
           } else if (e.quickCode == 1) {
             // retryable
-            instance.state = EInstanceState.ERROR; // Mark as error for the garbage shedule
+            instance.state = EInstanceState.ERROR; // Mark as error for the error routine
           } else if (e.quickCode == -1) {
             // instance can't be run
             instance.state = EInstanceState.DEAD;
@@ -107,15 +107,9 @@ class Core {
       quickCode: 0,
     });
 
-    // Storage first entry init
-    /*for (const instance of Array.from(this.instances.values()).filter((e) => e.state === EInstanceState.RUNNING)) {
-      if (instance.DBManager.firstEntry) {
-        //instance.DBManager.save(await Bulletin.getDatas(instance.authInfos));
-      }
-    }*/
-
     // Shedule bind
     this.shed.bindAJob("Check_For_Update", "*/10 * * * *", async () => await Core.checkForUpdate()); // check for update
+    this.shed.bindAJob("Check_New_Notes", "*/5 * * * *", async () => await Core.scrapRoutine());
   }
 
   public static async checkForUpdate() {
@@ -138,6 +132,14 @@ class Core {
       return;
     }
   }
+
+  public static async scrapRoutine() {
+    // TODO
+  }
+
+  public static async errorRoutine() {
+    // TODO
+  }
 }
 
 class Bot {
@@ -150,19 +152,6 @@ class Bot {
   constructor(cfg: IInstanceCfg) {
     this.cfg = cfg;
     this.DBManager = new storage(cfg.instance_name);
-  }
-
-  async _run() {
-    /*if (this.DBManager.firstEntry) {
-      this.DBManager.save(await Bulletin.getDatas());
-    }*/
-    //this.shed.bindAJob("Check_New_Notes", "*/5 * * * *", async () => await EachFivesMinutes(this));
-    /*await AppLogger.log({
-      message: "Service bind thought Scheduler !",
-      moduleName: this.constructor.name,
-      type: ELogType.INFO,
-      quickCode: 0,
-    });*/
   }
 }
 

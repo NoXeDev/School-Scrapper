@@ -23,7 +23,7 @@ export default class Bulletin {
     if (!process.env.BULLETIN) {
       throw {
         message: "Bulletin env var not set",
-        moduleName: this.constructor.name,
+        moduleName: this.constructor.name + ":" + this.doAuth.name,
         type: ELogType.CRITIAL,
       };
     }
@@ -39,14 +39,14 @@ export default class Bulletin {
         if (err.response.status !== 302) {
           throw {
             message: "Invalid AUTH CAS2",
-            moduleName: this.constructor.name,
+            moduleName: this.constructor.name + ":" + this.doAuth.name,
             type: ELogType.ERROR,
             quickCode: ELogQuickErrCode.INVALID_AUTH,
           };
         } else {
           throw {
             message: "Error with auth request",
-            moduleName: this.constructor.name,
+            moduleName: this.constructor.name + ":" + this.doAuth.name,
             type: ELogType.ERROR,
             quickCode: ELogQuickErrCode.AUTH_REQUEST_ERROR,
             detail: err,
@@ -62,7 +62,7 @@ export default class Bulletin {
     } else {
       throw {
         message: "Unexpected fetched datas",
-        moduleName: this.constructor.name,
+        moduleName: this.constructor.name + ":" + this.doAuth.name,
         type: ELogType.ERROR,
         quickCode: ELogQuickErrCode.BAD_DATAS,
       };
@@ -72,7 +72,7 @@ export default class Bulletin {
       sessid = "";
       throw {
         message: "Invalid sessionID provided",
-        moduleName: this.constructor.name,
+        moduleName: this.constructor.name + ":" + this.doAuth.name,
         type: ELogType.WARNING,
         quickCode: ELogQuickErrCode.BAD_SESSIONID,
         detail: "Please open an issue on the repo",
@@ -96,7 +96,7 @@ export default class Bulletin {
         const castedErr = e as AxiosError;
         throw {
           message: "Error with request",
-          moduleName: this.constructor.name,
+          moduleName: this.constructor.name + ":" + this.__checkSessID.name,
           type: ELogType.ERROR,
           quickCode: ELogQuickErrCode.REQUEST_ERROR,
           detail: castedErr.message,
@@ -104,7 +104,7 @@ export default class Bulletin {
       } else {
         throw {
           message: "Service unknown error",
-          moduleName: this.constructor.name,
+          moduleName: this.constructor.name + ":" + this.__checkSessID.name,
           type: ELogType.ERROR,
           quickCode: ELogQuickErrCode.UNKNOWN_ERROR,
         };
@@ -118,11 +118,11 @@ export default class Bulletin {
     return true;
   }
 
-  public static async getDatas(sessid: string, semester_target?: [string]): Promise<TRessources_Record> {
+  public static async getDatas(sessid: string, semester_target?: string[]): Promise<TRessources_Record> {
     if (!process.env.BULLETIN) {
       throw {
         message: "Bulletin env var not set",
-        moduleName: this.constructor.name,
+        moduleName: this.constructor.name + ":" + this.getDatas.name,
         type: ELogType.CRITIAL,
       };
     }
@@ -133,7 +133,7 @@ export default class Bulletin {
       if (!(await Bulletin.__checkSessID(sessid, process.env.BULLETIN))) {
         throw {
           message: "Sessid seems expired",
-          moduleName: this.constructor.name,
+          moduleName: this.constructor.name + ":" + this.getDatas.name,
           type: ELogType.WARNING,
           quickCode: ELogQuickErrCode.SESSID_EXPIRED,
         };
@@ -166,7 +166,7 @@ export default class Bulletin {
               const err: AxiosError = e as AxiosError;
               throw {
                 message: "Axios error",
-                moduleName: this.constructor.name,
+                moduleName: this.constructor.name + ":" + this.getDatas.name,
                 type: ELogType.ERROR,
                 detail: err.message,
               };
@@ -213,7 +213,7 @@ export default class Bulletin {
         } else {
           throw {
             message: "Service unknown error",
-            moduleName: this.constructor.name,
+            moduleName: this.constructor.name + ":" + this.getDatas.name,
             type: ELogType.ERROR,
             quickCode: ELogQuickErrCode.BAD_DATAS,
           };
@@ -221,14 +221,14 @@ export default class Bulletin {
       } else {
         throw {
           message: "Semestres paring failed",
-          moduleName: this.constructor.name,
+          moduleName: this.constructor.name + ":" + this.getDatas.name,
           type: ELogType.ERROR,
         };
       }
     } else {
       throw {
         message: "Invalids datas parsed",
-        moduleName: this.constructor.name,
+        moduleName: this.constructor.name + ":" + this.getDatas.name,
         type: ELogType.ERROR,
         detail: datas.data,
       };
