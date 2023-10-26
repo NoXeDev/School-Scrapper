@@ -68,7 +68,7 @@ export default class Bulletin {
       };
     }
 
-    if (!(await Bulletin.__checkSessID(sessid, process.env.BULLETIN))) {
+    if (!(await Bulletin.checkSessid(sessid, process.env.BULLETIN))) {
       sessid = "";
       throw {
         message: "Invalid sessionID provided",
@@ -81,7 +81,7 @@ export default class Bulletin {
     return sessid;
   }
 
-  private static async __checkSessID(sessid: string, service_url: string): Promise<boolean> {
+  public static async checkSessid(sessid: string, service_url: string): Promise<boolean> {
     let verifyAuthRes: AxiosResponse<any, any>;
     try {
       verifyAuthRes = await axios.get(service_url + "/services/doAuth.php?href=" + encodeURIComponent(service_url + "/"), {
@@ -96,7 +96,7 @@ export default class Bulletin {
         const castedErr = e as AxiosError;
         throw {
           message: "Error with request",
-          moduleName: this.constructor.name + ":" + this.__checkSessID.name,
+          moduleName: this.constructor.name + ":" + this.checkSessid.name,
           type: ELogType.ERROR,
           quickCode: ELogQuickErrCode.REQUEST_ERROR,
           detail: castedErr.message,
@@ -104,7 +104,7 @@ export default class Bulletin {
       } else {
         throw {
           message: "Service unknown error",
-          moduleName: this.constructor.name + ":" + this.__checkSessID.name,
+          moduleName: this.constructor.name + ":" + this.checkSessid.name,
           type: ELogType.ERROR,
           quickCode: ELogQuickErrCode.UNKNOWN_ERROR,
         };
@@ -118,7 +118,7 @@ export default class Bulletin {
     return true;
   }
 
-  public static async getDatas(sessid: string, semester_target?: string[]): Promise<TRessources_Record> {
+  public static async getDatas(sessid: string, semester_target?: number[]): Promise<TRessources_Record> {
     if (!process.env.BULLETIN) {
       throw {
         message: "Bulletin env var not set",
@@ -130,7 +130,7 @@ export default class Bulletin {
 
     const datas: AxiosResponse<any, any> = await axios.post(postURL, null, { headers: { Cookie: "PHPSESSID=" + sessid } });
     if (datas.data?.redirect) {
-      if (!(await Bulletin.__checkSessID(sessid, process.env.BULLETIN))) {
+      if (!(await Bulletin.checkSessid(sessid, process.env.BULLETIN))) {
         throw {
           message: "Sessid seems expired",
           moduleName: this.constructor.name + ":" + this.getDatas.name,
