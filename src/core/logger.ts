@@ -13,6 +13,7 @@ export enum ELogType {
 export interface RichLog {
   type: ELogType;
   message: string;
+  instanceName?: string;
   quickCode?: number;
   moduleName: string;
   detail?: string;
@@ -23,6 +24,7 @@ const RichLogSchema: JSONSchemaType<RichLog> = {
   type: "object",
   properties: {
     message: { type: "string" },
+    instanceName: { type: "string", nullable: true },
     type: { type: "integer" },
     moduleName: { type: "string" },
     quickCode: { type: "integer", nullable: true },
@@ -86,9 +88,9 @@ export class AppLogger {
       emote = content.emote;
     }
 
-    const rawStr = `${emote} [${new Date().toLocaleString()}] - [${content.moduleName} - v${packageJson.version}]${
-      content.quickCode ? " (" + content.quickCode + ")" : ""
-    } :  ${content.message}${
+    const rawStr = `${emote} [${new Date().toLocaleString()}] - [${content.instanceName ? content.instanceName + ":" : ""}${
+      content.moduleName
+    } - v${packageJson.version}]${content.quickCode ? " (" + content.quickCode + ")" : ""} :  ${content.message}${
       content.detail
         ? `\nDetails :\n \`${typeof content.detail == "object" ? JSON.stringify(content.detail) : content.detail}\``
         : ""
@@ -118,5 +120,11 @@ export class AppLogger {
 
   public static async setWebHookLog(webhook: string) {
     this.fallback_webhook = webhook;
+  }
+
+  public static print(e: any) {
+    if (!process.env.NODE_ENV) {
+      console.log(e);
+    }
   }
 }

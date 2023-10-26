@@ -2,10 +2,6 @@ import axios, { AxiosError, AxiosResponse } from "axios";
 import { HTMLElement, parse } from "node-html-parser";
 import { ELogType } from "../core/logger.js";
 
-export enum ECAS2_SERVICES {
-  BULLETIN,
-}
-
 export interface ICAS2AuthInfos {
   Auth_Service_Url: string;
   ServiceRootUrl: string;
@@ -16,22 +12,16 @@ export interface ICredentials {
   password: string;
 }
 
-export interface ICAS2config {
-  loginPath: string;
-  services: Array<string>;
-}
-
 export default class CAS2 {
-  private tgc: string;
-  private creds: ICredentials;
-  private config: ICAS2config;
-
-  constructor(config: ICAS2config, creds: ICredentials) {
-    this.creds = creds;
-    this.config = config;
-  }
-
-  public async getAuthInfos(service: ECAS2_SERVICES): Promise<ICAS2AuthInfos> {
+  public static async getAuthInfos(creds: ICredentials): Promise<ICAS2AuthInfos> {
+    if (process.env.BULLETIN == undefined || process.env.CAS2 == undefined) {
+      throw {
+        message: "Missing environment variable",
+        moduleName: this.constructor.name,
+        type: ELogType.CRITIAL,
+        quickCode: -2, // Need to stop app
+      };
+    }
     const headers = {
       "Content-Type": "application/x-www-form-urlencoded",
       "User-Agent":
@@ -39,15 +29,12 @@ export default class CAS2 {
     };
 
     const urlCFG =
-      this.config.loginPath +
+      process.env.CAS2 +
       "?service=" +
-      encodeURIComponent(
-        this.config.services[service] + "/services/doAuth.php?href=" + encodeURIComponent(this.config.services[service] + "/"),
-      );
+      encodeURIComponent(process.env.BULLETIN + "/services/doAuth.php?href=" + encodeURIComponent(process.env.BULLETIN + "/"));
 
     const executionRes: AxiosResponse<any, any> = await axios
       .get(urlCFG, {
-        headers: { Cookie: "TGC=" + this.tgc },
         maxRedirects: 0,
         validateStatus: function (status: number): boolean {
           return status == 302 || status == 200;
@@ -59,6 +46,7 @@ export default class CAS2 {
           moduleName: this.constructor.name,
           type: ELogType.CRITIAL,
           detail: (err as AxiosError).message,
+          quickCode: 1, // Mark as re-tryable
         };
       });
 
@@ -66,7 +54,7 @@ export default class CAS2 {
     if (executionRes.status == 302 && typeof executionRes.headers["location"] == "string") {
       return {
         Auth_Service_Url: executionRes.headers["location"],
-        ServiceRootUrl: this.config.services[service],
+        ServiceRootUrl: process.env.BULLETIN,
       };
     }
 
@@ -80,8 +68,8 @@ export default class CAS2 {
     const loginPayload = {
       _eventId: "submit",
       execution: execution,
-      username: this.creds.username,
-      password: this.creds.password,
+      username: creds.username,
+      password: creds.password,
     };
     const urlencodedFormLoginPayload = new URLSearchParams(loginPayload);
 
@@ -99,6 +87,7 @@ export default class CAS2 {
             message: "Invalid credentials",
             moduleName: this.constructor.name,
             type: ELogType.CRITIAL,
+            quickCode: -1, // Mark as dead
           };
         } else {
           throw {
@@ -106,6 +95,7 @@ export default class CAS2 {
             moduleName: this.constructor.name,
             type: ELogType.CRITIAL,
             detail: (err as AxiosError).message,
+            quickCode: 1, // Mark as re-tryable
           };
         }
       });
@@ -113,16 +103,15 @@ export default class CAS2 {
     if (loginRes.headers["location"] && loginRes.headers["set-cookie"]) {
       const returnValue: ICAS2AuthInfos = {
         Auth_Service_Url: loginRes.headers["location"],
-        ServiceRootUrl: this.config.services[service],
+        ServiceRootUrl: process.env.BULLETIN,
       };
-      this.tgc = loginRes.headers["set-cookie"][0].split(";")[0].replace("TGC=", "");
-
       return returnValue;
     } else {
       throw {
         message: "Bad request handle",
         moduleName: this.constructor.name,
         type: ELogType.CRITIAL,
+        quickCode: 1, // Mark as re-tryable
       };
     }
   }
