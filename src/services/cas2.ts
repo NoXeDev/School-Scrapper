@@ -14,14 +14,6 @@ export interface ICredentials {
 
 export default class CAS2 {
   public static async getAuthInfos(creds: ICredentials): Promise<ICAS2AuthInfos> {
-    if (process.env.BULLETIN == undefined || process.env.CAS2 == undefined) {
-      throw {
-        message: "Missing environment variable",
-        moduleName: this.constructor.name,
-        type: ELogType.CRITIAL,
-        quickCode: -2, // Need to stop app
-      };
-    }
     const headers = {
       "Content-Type": "application/x-www-form-urlencoded",
       "User-Agent":

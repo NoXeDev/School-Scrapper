@@ -20,14 +20,6 @@ export default class Bulletin {
   private static dataValidator: ValidateFunction = Bulletin.coreAjv.compile(JTDBulletin);
 
   public static async doAuth(auth_infos: ICAS2AuthInfos): Promise<string> {
-    if (!process.env.BULLETIN) {
-      throw {
-        message: "Bulletin env var not set",
-        moduleName: this.constructor.name + ":" + this.doAuth.name,
-        type: ELogType.CRITIAL,
-      };
-    }
-
     const doAuthRes = await axios
       .get(auth_infos.Auth_Service_Url, {
         maxRedirects: 0,
@@ -68,7 +60,7 @@ export default class Bulletin {
       };
     }
 
-    if (!(await Bulletin.checkSessid(sessid, process.env.BULLETIN))) {
+    if (!(await Bulletin.checkSessid(sessid))) {
       sessid = "";
       throw {
         message: "Invalid sessionID provided",
@@ -81,8 +73,9 @@ export default class Bulletin {
     return sessid;
   }
 
-  public static async checkSessid(sessid: string, service_url: string): Promise<boolean> {
+  public static async checkSessid(sessid: string): Promise<boolean> {
     let verifyAuthRes: AxiosResponse<any, any>;
+    const service_url: string = process.env.BULLETIN;
     try {
       verifyAuthRes = await axios.get(service_url + "/services/doAuth.php?href=" + encodeURIComponent(service_url + "/"), {
         maxRedirects: 0,
@@ -130,7 +123,7 @@ export default class Bulletin {
 
     const datas: AxiosResponse<any, any> = await axios.post(postURL, null, { headers: { Cookie: "PHPSESSID=" + sessid } });
     if (datas.data?.redirect) {
-      if (!(await Bulletin.checkSessid(sessid, process.env.BULLETIN))) {
+      if (!(await Bulletin.checkSessid(sessid))) {
         throw {
           message: "Sessid seems expired",
           moduleName: this.constructor.name + ":" + this.getDatas.name,

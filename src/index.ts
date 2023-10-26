@@ -11,8 +11,6 @@ import { DiscordWebHook } from "./core/request.js";
 import { Semaphore } from "async-mutex";
 import Updater from "./core/updater.js";
 
-let BULLETIN_ENV: string;
-
 enum EInstanceState {
   RUNNING,
   ERROR,
@@ -25,8 +23,10 @@ class Core {
   public static instances: Map<string, Bot> = new Map<string, Bot>();
   private static semaphore: Semaphore = new Semaphore(5);
 
-  public static async coreInit() {
-    await Core.checkForUpdate();
+  public static async launch() {
+    if (process.env.NODE_ENV == "production") {
+      await Core.checkForUpdate();
+    }
 
     // Load config
     let cfg: IGlobalCfg;
@@ -79,7 +79,10 @@ class Core {
     });
 
     // Shedule bind
-    this.shed.bindAJob("Check_For_Update", "*/10 * * * *", async () => await Core.checkForUpdate()); // check for update
+    if (process.env.NODE_ENV == "production") {
+      this.shed.bindAJob("Check_For_Update", "*/10 * * * *", async () => await Core.checkForUpdate()); // check for update
+    }
+
     this.shed.bindAJob(
       "Check_New_Notes",
       "*/5 * * * *",
@@ -124,7 +127,7 @@ class Core {
 
   public static async asyncScrapRoutine(instance: Bot) {
     instance.internalPrint("Starting scrap routine");
-    if (!instance.sessid || !(await Bulletin.checkSessid(instance.sessid, BULLETIN_ENV))) {
+    if (!instance.sessid || !(await Bulletin.checkSessid(instance.sessid))) {
       try {
         instance.sessid = await Bulletin.doAuth(instance.authInfos);
       } catch (e) {
@@ -234,10 +237,15 @@ class Bot {
     }
   });
 
-  if (!process.env.BULLETIN) {
-    process.exit(-1);
-  } else {
-    BULLETIN_ENV = process.env.BULLETIN;
+  if (!process.env.BULLETIN || !process.env.CAS2) {
+    AppLogger.log({
+      message: "Missing environment variable",
+      moduleName: "Root",
+      type: ELogType.CRITIAL,
+      quickCode: -2, // Need to stop app
+    });
+    process.exit(-2);
   }
-  await Core.coreInit();
+
+  await Core.launch(); // Main core function
 })();
