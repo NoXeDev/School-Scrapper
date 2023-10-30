@@ -1,5 +1,4 @@
 import axios from "axios";
-import fs from "fs";
 import Ajv, { ValidateFunction, JSONSchemaType } from "ajv";
 
 export enum ELogType {
@@ -35,17 +34,10 @@ const RichLogSchema: JSONSchemaType<RichLog> = {
 
 export class AppLogger {
   private static fallback_webhook?: string;
-  private static savePath = "./logs";
 
   public static async log(content: string | RichLog, netLog = true) {
     if (!this.fallback_webhook || this.fallback_webhook == "") {
       netLog = false;
-    }
-    if (!fs.existsSync(this.savePath)) {
-      fs.mkdirSync(this.savePath.replace("./", ""));
-    }
-    if (!fs.existsSync(this.savePath + "/main.txt")) {
-      fs.writeFileSync(this.savePath + "/main.txt", "", "utf-8");
     }
 
     if (typeof content == "string") {
@@ -96,7 +88,6 @@ export class AppLogger {
     }`;
 
     console.log(rawStr); // Log into console
-    await fs.promises.appendFile(this.savePath + "/main.txt", rawStr + "\n", "utf-8"); // Log into logfile
     if (netLog) {
       await this.webhook_log(rawStr); // Log into webhook (only if option is enable)
     }
