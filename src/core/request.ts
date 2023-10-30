@@ -1,7 +1,6 @@
 import axios, { isAxiosError, AxiosError } from "axios";
 import { IBulletin_Evaluation, IBulletin_Ressource } from "../common/bulletin_interfaces.js";
 import { ELogType } from "./logger.js";
-import packageJson from "../../package.json";
 export class DiscordWebHook {
   public static async post(
     webhook_url: string,
@@ -27,7 +26,7 @@ export class DiscordWebHook {
                 : "https://cdn3.iconfinder.com/data/icons/online-education-v-1-1/64/line_color-16-512.png",
             },
             footer: {
-              text: `SchoolScrap v${packageJson.version} © NoXeDev`,
+              text: `SchoolScrap v${process.env.VERSION} © NoXeDev`,
               icon_url: "https://avatars.githubusercontent.com/u/34164412",
             },
             fields: [

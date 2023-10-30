@@ -1,4 +1,6 @@
 const { EsbuildPlugin } = require("esbuild-loader");
+const { DefinePlugin } = require("webpack");
+const packagejson = require("./package.json")
 
 module.exports = {
   devtool: "inline-source-map",
@@ -7,9 +9,7 @@ module.exports = {
     filename: "bundle.js",
   },
   resolve: {
-    // Add `.ts` and `.tsx` as a resolvable extension.
     extensions: [".ts", ".js"],
-    // Add support for TypeScripts fully qualified ESM imports.
     extensionAlias: {
       ".js": [".js", ".ts"],
       ".cjs": [".cjs", ".cts"],
@@ -18,7 +18,6 @@ module.exports = {
   },
   module: {
     rules: [
-      // all files with a `.ts`, `.cts`, `.mts` or `.tsx` extension will be handled by `ts-loader`
       { test: /\.([cm]?ts)$/, loader: "esbuild-loader" },
     ],
   },
@@ -30,4 +29,10 @@ module.exports = {
       }),
     ],
   },
+  plugins: [
+    new DefinePlugin({
+      "process.env.VERSION": JSON.stringify(packagejson.version),
+      "process.env.URL": JSON.stringify(packagejson.repository.url),
+    }),
+  ]
 };

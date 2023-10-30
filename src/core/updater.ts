@@ -1,19 +1,18 @@
 import axios, { AxiosResponse } from "axios";
 import { execSync } from "child_process";
 import { ELogType } from "./logger";
-import packageJson from "../../package.json";
 
 export type IUpdateCfg = { flushDB: boolean; flushLogs: boolean };
 
 export default class Updater {
   public static async checkForUpdates(): Promise<IUpdateCfg | null> {
-    const urlApi: string = packageJson.repository.url;
+    const urlApi: string = process.env.URL;
     const latestTagRelease: AxiosResponse<any, any> = await axios.get(
       "https://api.github.com/repos/" + urlApi.replace("git+https://github.com/", "") + "/releases/latest",
     );
 
     if (latestTagRelease.data["tag_name"]) {
-      if (packageJson.version !== latestTagRelease.data["tag_name"]) {
+      if (process.env.VERSION !== latestTagRelease.data["tag_name"]) {
         if (latestTagRelease.data["body"]) {
           const bodyParsed = latestTagRelease.data["body"].split("/");
           return {
