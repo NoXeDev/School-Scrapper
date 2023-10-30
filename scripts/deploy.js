@@ -62,12 +62,10 @@ async function preChecks() {
     console.error("[X] - Error : git remote check failed")
     process.exit(-1)
   }
-
-  return rootPackageJson
 }
 
 async function update() {
-  let rootPackageJson = await preChecks()
+  await preChecks()
 
   console.log("[*] - Pull git version...")
   try {
@@ -75,6 +73,14 @@ async function update() {
   } catch {
     console.error("[X] - Error : git pull failed")
     process.exit(-1)
+  }
+
+  console.log("[*] - Install dependecies...")
+  try {
+    cp.execSync("yarn install", { stdio: "ignore" });
+  } catch {
+    console.error("[X] - Failed to install dependencies");
+    process.exit(-1);
   }
 
   console.log("[*] - Yarn generate production build...")
@@ -103,17 +109,9 @@ async function update() {
     }
   }
 
-  console.log("[*] - Install dependecies...")
-  try {
-    cp.execSync("yarn install", { stdio: "ignore" });
-  } catch {
-    console.error("[X] - Failed to install dependencies");
-    process.exit(-1);
-  }
-
   console.log("[*] - Restart updated application")
   try {
-    cp.execSync(`pm2 restart ${rootPackageJson["name"]} -- update-ok ${process.argv.includes("--flush-database") ? "update-db-flush" : ""} ${process.argv.includes("--flush-logs") ? "update-logs-flush" : ""}`)
+    cp.execSync(`pm2 restart ecosystem.config.js -- update-ok ${process.argv.includes("--flush-database") ? "update-db-flush" : ""} ${process.argv.includes("--flush-logs") ? "update-logs-flush" : ""}`)
     console.log("[^] - Updated successfully !")
   } catch {
     console.error("[X] - Failed to restart updated application")
@@ -126,7 +124,7 @@ async function update() {
 
 async function install() {
 
-  let rootPackageJson = await preChecks();
+  await preChecks();
 
   console.log("[*] - Checking production build...")
   if(!fs.existsSync("./dist") && !fs.existsSync("./dist/bundle.js")) {
@@ -144,9 +142,19 @@ async function install() {
     console.log("[^] - Config file exist !")
   }
 
+  try {
+    if(!fs.existsSync("./logs")) {
+      console.log("[*] - Creating logs directory...")
+      fs.mkdirSync("./logs")
+      console.log("[^] - Logs directory created !")
+    }
+  } catch {
+    console.log("[X] - Can't create logs directory")
+  }
+
   console.log("[*] - Create pm2 process...")
   try {
-    cp.execSync(`pm2 start ./dist/bundle.js --name ${rootPackageJson["name"]}`)
+    cp.execSync(`pm2 start ecosystem.config.js`)
     console.log("[^] - PM2 process successfully launched !")
   } catch {
     console.error("[X] - Error : Failed to create pm2 process")
