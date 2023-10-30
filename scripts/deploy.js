@@ -95,7 +95,7 @@ async function update() {
   if(process.argv.includes("--flush-logs")) {
     console.log("[*] - Flushing logs...")
     try{
-      fs.rmSync("./logs", {recursive: true, force: true})
+      cp.execSync("pm2 flush ecosystem.config.js", {stdio: "ignore"})
     } catch {
       console.log("[0] - Warning : Failed to flush logs...")
     }
