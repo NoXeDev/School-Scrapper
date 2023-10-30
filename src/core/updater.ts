@@ -47,7 +47,7 @@ export default class Updater {
       if (config.flushLogs) {
         extensionStr += "--flush-logs";
       }
-      execSync("node ./scripts/deploy.js --update " + extensionStr);
+      execSync("node ./scripts/remote-deploy.js --update " + extensionStr);
     } catch (e) {
       throw {
         message: "Updater failed to launch deploy script",

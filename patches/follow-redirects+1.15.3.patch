@@ -20,5 +20,6 @@ index decb77d..e0f3b41 100644
      }
 -  }
 +  }*/
-   debug.apply(null, arguments);
+-  debug.apply(null, arguments);
++  //debug.apply(null, arguments);
  };
