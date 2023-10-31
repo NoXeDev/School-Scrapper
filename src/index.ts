@@ -90,7 +90,7 @@ class Core {
       true,
     ); // check for new notes
     this.shed.bindAJob("Error_Routine", "*/15 * * * *", () =>
-      Core.syncExecOnInstanceState(this.instances, EInstanceState.ERROR, Core.asyncErrorRoutine),
+      Core.syncExecOnInstanceState(this.instances, EInstanceState.ERROR, Core.asyncErrorRoutine.bind(this)),
     ); // error routine
   }
 
