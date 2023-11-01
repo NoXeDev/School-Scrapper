@@ -205,7 +205,7 @@ class Bot {
   }
 
   public setState(state: EInstanceState) {
-    this.internalPrint(`State changed to ${EInstanceState[state]}`);
+    AppLogger.log(`[${this.cfg.instance_name}] - State changed to ${EInstanceState[state]}`);
     this.state = state;
   }
 }
