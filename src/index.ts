@@ -60,10 +60,10 @@ class Core {
             process.exit(-1);
           } else if (e.quickCode == 1) {
             // retryable
-            instance.state = EInstanceState.ERROR; // Mark as error for the error routine
+            instance.setState(EInstanceState.ERROR); // Mark as error for the error routine
           } else if (e.quickCode == -1) {
             // instance can't be run
-            instance.state = EInstanceState.DEAD;
+            instance.setState(EInstanceState.DEAD);
           }
         }
       }
@@ -133,7 +133,7 @@ class Core {
       } catch (e) {
         e.instanceName = instance.cfg.instance_name;
         AppLogger.log(e);
-        instance.state = EInstanceState.ERROR;
+        instance.setState(EInstanceState.ERROR);
         return;
       }
     }
@@ -144,7 +144,7 @@ class Core {
     } catch (e) {
       e.instanceName = instance.cfg.instance_name;
       AppLogger.log(e);
-      instance.state = EInstanceState.ERROR;
+      instance.setState(EInstanceState.ERROR);
       return;
     }
 
@@ -182,7 +182,7 @@ class Core {
   public static async asyncErrorRoutine(instance: Bot) {
     instance.internalPrint("Starting error routine");
     this.asyncScrapRoutine(instance).then(() => {
-      instance.state = EInstanceState.RUNNING;
+      instance.setState(EInstanceState.RUNNING);
       instance.internalPrint("instance revived !");
     });
   }
@@ -202,6 +202,11 @@ class Bot {
 
   public internalPrint(e: any) {
     AppLogger.print(`[${this.cfg.instance_name}] - ${e}`);
+  }
+
+  public setState(state: EInstanceState) {
+    this.internalPrint(`State changed to ${EInstanceState[state]}`);
+    this.state = state;
   }
 }
 
