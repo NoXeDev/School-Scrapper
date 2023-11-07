@@ -4,7 +4,7 @@ import CAS2, { ICAS2AuthInfos } from "./services/cas2.js";
 import Sheduler from "./core/scheduler.js";
 import cfgLoader from "./core/configLoader.js";
 import { AppLogger, ELogType, RichLog } from "./core/logger.js";
-import { IGlobalCfg, IInstanceCfg, JTD_AppConfig } from "./common/app_config_schemas.js";
+import { IGlobalCfg, IInstanceCfg } from "./common/app_config_schemas.js";
 import storage from "./core/storage.js";
 import { TRessources_Record, IBulletin_Ressource, IBulletin_Evaluation } from "./common/bulletin_interfaces.js";
 import { DiscordWebHook } from "./core/request.js";
@@ -18,7 +18,7 @@ enum EInstanceState {
 }
 
 class Core {
-  public static loader: cfgLoader<IGlobalCfg> = new cfgLoader<IGlobalCfg>(JTD_AppConfig);
+  public static loader: cfgLoader = new cfgLoader();
   public static shed: Sheduler = new Sheduler();
   public static instances: Map<string, Bot> = new Map<string, Bot>();
   private static semaphore: Semaphore = new Semaphore(5);
