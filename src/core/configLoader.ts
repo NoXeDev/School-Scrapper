@@ -1,15 +1,15 @@
 import fs from "fs/promises";
 import Ajv, { JTDParser } from "ajv/dist/jtd.js";
-import { JTD_AppConfig, retro_JTD_AppConfig, IGlobalCfg, retro_IGlobalCfg, IInstanceCfg } from "../common/app_config_schemas";
+import { JTD_AppConfig, retro_JTD_AppConfig, IGlobalCfg, retro_IGlobalCfg, IInstanceCfg } from "../common/app_config_schemas.js";
 import { ELogType } from "./logger.js";
 //import addFormats from "ajv-formats";
 
 export default class cfgLoader {
   private compiler: JTDParser;
   private retroCompiler: JTDParser;
-  private ajv: Ajv;
+  private ajv: Ajv.default;
   constructor() {
-    this.ajv = new Ajv();
+    this.ajv = new Ajv.default();
     this.compiler = this.ajv.compileParser(JTD_AppConfig);
     this.retroCompiler = this.ajv.compileParser(retro_JTD_AppConfig);
   }

@@ -16,7 +16,7 @@ enum ELogQuickErrCode {
 }
 
 export default class Bulletin {
-  private static coreAjv: ajv = new ajv();
+  private static coreAjv: ajv.default = new ajv.default();
   private static dataValidator: ValidateFunction = Bulletin.coreAjv.compile(JTDBulletin);
 
   public static async doAuth(auth_infos: ICAS2AuthInfos): Promise<string> {

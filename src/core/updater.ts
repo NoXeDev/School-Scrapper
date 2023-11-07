@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from "axios";
 import { execSync } from "child_process";
-import { ELogType } from "./logger";
+import { ELogType } from "./logger.js";
 
 export type IUpdateCfg = { flushDB: boolean; flushLogs: boolean };
 
