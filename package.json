@@ -10,8 +10,7 @@
     "start": "yarn run webpack && node dist/bundle.js",
     "lint": "eslint src/**/*.ts",
     "deploy-prod": "yarn install && yarn run build-prod && node ./scripts/remote-deploy.js --install",
-    "clear": "rimraf dist/ && rimraf database/ && rimraf logs/",
-    "postinstall": "patch-package"
+    "clear": "rimraf dist/ && rimraf database/ && rimraf logs/"
   },
   "repository": {
     "type": "git",
@@ -40,15 +39,16 @@
     "axios": "^1.6.0",
     "cron": "^3.1.6",
     "dotenv": "^16.3.1",
-    "esbuild-loader": "^4.0.2",
     "node-html-parser": "^6.1.11",
-    "patch-package": "^8.0.0",
-    "postinstall-postinstall": "^2.1.0",
     "rimraf": "^5.0.5",
     "ts-loader": "^9.5.0",
+    "tslog": "^4.9.2",
     "typescript": "^5.2.2",
     "webpack": "^5.89.0",
-    "webpack-cli": "^5.1.4",
-    "yarn": "^1.22.19"
+    "webpack-cli": "^5.1.4"
+  },
+  "packageManager": "yarn@4.0.1",
+  "resolutions": {
+    "follow-redirects@npm:^1.15.0": "patch:follow-redirects@npm%3A1.15.3#~/.yarn/patches/follow-redirects-npm-1.15.3-ca69c47b72.patch"
   }
 }

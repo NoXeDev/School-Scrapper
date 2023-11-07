@@ -42,3 +42,12 @@ oldconfig.json
 
 package-lock.json
 yarn.lock
+
+# YARN
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions

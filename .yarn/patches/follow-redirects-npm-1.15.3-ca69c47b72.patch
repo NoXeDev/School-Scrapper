@@ -1,0 +1,24 @@
+diff --git a/debug.js b/debug.js
+index decb77dedde56627ef2d50280daa14326a6091e1..cad73cb588928516cd70410ec134fc7fd83604c8 100644
+--- a/debug.js
++++ b/debug.js
+@@ -1,15 +1,14 @@
+ var debug;
+ 
+ module.exports = function () {
+-  if (!debug) {
++  /*if (!debug) {
+     try {
+-      /* eslint global-require: off */
+       debug = require("debug")("follow-redirects");
+     }
+-    catch (error) { /* */ }
++    catch (error) { }
+     if (typeof debug !== "function") {
+-      debug = function () { /* */ };
++      debug = function () { };
+     }
+   }
+-  debug.apply(null, arguments);
++  debug.apply(null, arguments);*/
+ };
