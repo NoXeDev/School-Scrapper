@@ -122,7 +122,7 @@ export class InstanceManager {
     try {
       notes = await Bulletin.getDatas(instance.sessid, instance.cfg.semester_target);
     } catch (e) {
-      if (e.code == "SESSID_EXPIRED" && !(await Bulletin.checkSessid(instance.sessid))) {
+      if (e.code == "SESSID_EXPIRED" && !(await Bulletin.checkSessid(instance.sessid)) && !forceAuth) {
         return this.asyncScrapRoutine(instance, true);
       } else {
         AppLogger.getInstanceSubLogger(instance).error("Bulletin get datas failed", e);
