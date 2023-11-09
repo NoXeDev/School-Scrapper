@@ -1,18 +1,17 @@
 import { ICAS2AuthInfos } from "./cas2.js";
-import { ELogType } from "../core/logger.js";
-import axios, { AxiosResponse, AxiosError, isAxiosError } from "axios";
+import axios, { AxiosResponse } from "axios";
 import ajv, { ValidateFunction } from "ajv";
 import { TRessources_Record, JTDBulletin, IBulletin_Ressource, IBulletin_Evaluation } from "../common/bulletin_interfaces.js";
+import { InstanceError } from "../common/errors.js";
 
 enum ELogQuickErrCode {
-  INVALID_AUTH = 1,
-  SESSID_EXPIRED,
-  AUTH_REQUEST_ERROR,
-  SERVICE_ERROR,
-  BAD_DATAS,
-  BAD_SESSIONID,
-  UNKNOWN_ERROR,
-  REQUEST_ERROR,
+  AUTH_BAD_DATAS = "AUTH_BAD_DATAS",
+  AUTH_REQUEST_ERROR = "AUTH_REQUEST_ERROR",
+  SESSID_EXPIRED = "SESSID_EXPIRED",
+  BAD_SESSIONID = "BAD_SESSIONID",
+  UNKNOWN_ERROR = "UNKNOWN_ERROR",
+  REQUEST_ERROR = "REQUEST_ERROR",
+  BAD_BULLETIN_DATAS = "BAD_BULLETIN_DATAS",
 }
 
 export default class Bulletin {
@@ -28,22 +27,7 @@ export default class Bulletin {
         },
       })
       .catch((err) => {
-        if (err.response.status !== 302) {
-          throw {
-            message: "Invalid AUTH CAS2",
-            moduleName: this.constructor.name + ":" + this.doAuth.name,
-            type: ELogType.ERROR,
-            quickCode: ELogQuickErrCode.INVALID_AUTH,
-          };
-        } else {
-          throw {
-            message: "Error with auth request",
-            moduleName: this.constructor.name + ":" + this.doAuth.name,
-            type: ELogType.ERROR,
-            quickCode: ELogQuickErrCode.AUTH_REQUEST_ERROR,
-            detail: err,
-          };
-        }
+        throw new InstanceError("Error with auth request", { cause: err, code: ELogQuickErrCode.AUTH_REQUEST_ERROR });
       });
 
     let sessid: string;
@@ -52,23 +36,7 @@ export default class Bulletin {
         .split(";")[0]
         .replace("PHPSESSID=", "");
     } else {
-      throw {
-        message: "Unexpected fetched datas",
-        moduleName: this.constructor.name + ":" + this.doAuth.name,
-        type: ELogType.ERROR,
-        quickCode: ELogQuickErrCode.BAD_DATAS,
-      };
-    }
-
-    if (!(await Bulletin.checkSessid(sessid))) {
-      sessid = "";
-      throw {
-        message: "Invalid sessionID provided",
-        moduleName: this.constructor.name + ":" + this.doAuth.name,
-        type: ELogType.WARNING,
-        quickCode: ELogQuickErrCode.BAD_SESSIONID,
-        detail: "Please open an issue on the repo",
-      };
+      throw new InstanceError("Unexpected fetched datas", { code: ELogQuickErrCode.AUTH_BAD_DATAS });
     }
     return sessid;
   }
@@ -85,23 +53,7 @@ export default class Bulletin {
         headers: { Cookie: "PHPSESSID=" + sessid },
       });
     } catch (e) {
-      if (isAxiosError(e)) {
-        const castedErr = e as AxiosError;
-        throw {
-          message: "Error with request",
-          moduleName: this.constructor.name + ":" + this.checkSessid.name,
-          type: ELogType.ERROR,
-          quickCode: ELogQuickErrCode.REQUEST_ERROR,
-          detail: castedErr.message,
-        };
-      } else {
-        throw {
-          message: "Service unknown error",
-          moduleName: this.constructor.name + ":" + this.checkSessid.name,
-          type: ELogType.ERROR,
-          quickCode: ELogQuickErrCode.UNKNOWN_ERROR,
-        };
-      }
+      return false;
     }
 
     if (typeof verifyAuthRes.headers["location"] == "string" && !verifyAuthRes.headers["location"].startsWith(service_url)) {
@@ -112,25 +64,11 @@ export default class Bulletin {
   }
 
   public static async getDatas(sessid: string, semester_target?: number[]): Promise<TRessources_Record> {
-    if (!process.env.BULLETIN) {
-      throw {
-        message: "Bulletin env var not set",
-        moduleName: this.constructor.name + ":" + this.getDatas.name,
-        type: ELogType.CRITIAL,
-      };
-    }
     const postURL: string = process.env.BULLETIN + "/services/data.php?q=dataPremi%C3%A8reConnexion";
 
     const datas: AxiosResponse<any, any> = await axios.post(postURL, null, { headers: { Cookie: "PHPSESSID=" + sessid } });
     if (datas.data?.redirect) {
-      if (!(await Bulletin.checkSessid(sessid))) {
-        throw {
-          message: "Sessid seems expired",
-          moduleName: this.constructor.name + ":" + this.getDatas.name,
-          type: ELogType.WARNING,
-          quickCode: ELogQuickErrCode.SESSID_EXPIRED,
-        };
-      }
+      throw new InstanceError("Sessid seems expired", { code: ELogQuickErrCode.SESSID_EXPIRED });
     }
 
     if (datas.data["relevé"]) {
@@ -156,13 +94,7 @@ export default class Bulletin {
               headers: { Cookie: "PHPSESSID=" + sessid },
             })
             .catch((e) => {
-              const err: AxiosError = e as AxiosError;
-              throw {
-                message: "Axios error",
-                moduleName: this.constructor.name + ":" + this.getDatas.name,
-                type: ELogType.ERROR,
-                detail: err.message,
-              };
+              throw new InstanceError("Semestres fetch failed", { cause: e, code: ELogQuickErrCode.REQUEST_ERROR });
             });
 
           if (
@@ -204,27 +136,13 @@ export default class Bulletin {
           Object.assign(resolvedReturn, saes);
           return resolvedReturn;
         } else {
-          throw {
-            message: "Service unknown error",
-            moduleName: this.constructor.name + ":" + this.getDatas.name,
-            type: ELogType.ERROR,
-            quickCode: ELogQuickErrCode.BAD_DATAS,
-          };
+          throw new InstanceError("Invalids datas parsed", { code: ELogQuickErrCode.BAD_BULLETIN_DATAS });
         }
       } else {
-        throw {
-          message: "Semestres paring failed",
-          moduleName: this.constructor.name + ":" + this.getDatas.name,
-          type: ELogType.ERROR,
-        };
+        throw new InstanceError("Semestres paring failed");
       }
     } else {
-      throw {
-        message: "Invalids datas parsed",
-        moduleName: this.constructor.name + ":" + this.getDatas.name,
-        type: ELogType.ERROR,
-        detail: datas.data,
-      };
+      throw new InstanceError("Service unknown error", { code: ELogQuickErrCode.BAD_BULLETIN_DATAS });
     }
   }
 

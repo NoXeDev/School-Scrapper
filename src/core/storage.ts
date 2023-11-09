@@ -4,9 +4,9 @@ import crypto from "crypto";
 import { serialize, deserialize } from "v8";
 import { Mutex } from "async-mutex";
 
-export default class Storage<I> {
+export default class Storage<I extends object> {
   private name: string;
-  public firstEntry: boolean;
+  private firstEntry: boolean;
   private cache: I;
   private cacheHash: string;
   private static metadataMutex: Mutex = new Mutex();
@@ -67,9 +67,20 @@ export default class Storage<I> {
     return dataHash == this.cacheHash;
   }
 
+  public isfirstEntry(): boolean {
+    if (!this.firstEntry) {
+      this.updateCache();
+      return this.firstEntry;
+    }
+    return this.firstEntry;
+  }
+
   private updateCache() {
     this.cache = deserialize(fsSync.readFileSync("./database/" + this.name + ".bin"));
     this.cacheHash = JSON.parse(fsSync.readFileSync("./database/metadatas.json", "utf-8"))[this.name];
+    if (this.cacheHash == undefined) {
+      this.firstEntry = true;
+    }
   }
 
   public load(): I {

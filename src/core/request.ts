@@ -1,6 +1,5 @@
-import axios, { isAxiosError, AxiosError } from "axios";
+import axios, { isAxiosError } from "axios";
 import { IBulletin_Evaluation, IBulletin_Ressource } from "../common/bulletin_interfaces.js";
-import { ELogType } from "./logger.js";
 export class DiscordWebHook {
   public static async post(
     webhook_url: string,
@@ -72,20 +71,9 @@ export class DiscordWebHook {
       });
     } catch (e) {
       if (isAxiosError(e)) {
-        const castedErr = e as AxiosError;
-        throw {
-          message: "Error with request : \n" + castedErr.message,
-          type: ELogType.ERROR,
-          moduleName: "DISCORD REQUEST",
-          quickCode: 20,
-        };
+        throw new Error("An error occured while sending discord webhook", { cause: e });
       } else {
-        throw {
-          message: "core unknown error",
-          type: ELogType.ERROR,
-          moduleName: "DISCORD REQUEST",
-          quickCode: 21,
-        };
+        throw new Error("Unknown error occured while sending discord webhook");
       }
     }
   }

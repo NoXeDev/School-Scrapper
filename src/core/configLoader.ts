@@ -1,8 +1,6 @@
 import fs from "fs/promises";
 import Ajv, { JTDParser } from "ajv/dist/jtd.js";
 import { JTD_AppConfig, retro_JTD_AppConfig, IGlobalCfg, retro_IGlobalCfg, IInstanceCfg } from "../common/app_config_schemas.js";
-import { ELogType } from "./logger.js";
-//import addFormats from "ajv-formats";
 
 export default class cfgLoader {
   private compiler: JTDParser;
@@ -20,13 +18,7 @@ export default class cfgLoader {
     try {
       rawdatas = await fs.readFile(pathCfg);
     } catch (e) {
-      throw {
-        message: "Error when read configuration file. ",
-        type: ELogType.CRITIAL,
-        moduleName: this.constructor.name,
-        quickCode: 10,
-        detail: e,
-      };
+      throw new Error("Error when read configuration file", { cause: e });
     }
 
     // datas is valid
@@ -44,20 +36,9 @@ export default class cfgLoader {
           };
         }
         const errorMsg: string = this.compiler.message;
-        throw {
-          message: "Error when read configuration file, JSON error",
-          type: ELogType.CRITIAL,
-          moduleName: this.constructor.name,
-          quickCode: 11,
-          detail: errorMsg,
-        };
+        throw new Error("Config file is not valid", { cause: errorMsg });
       } else {
-        throw {
-          message: "Unknown error when parse data",
-          type: ELogType.CRITIAL,
-          moduleName: this.constructor.name,
-          quickCode: 12,
-        };
+        throw new Error("Unknown error when parse config file");
       }
     }
   }

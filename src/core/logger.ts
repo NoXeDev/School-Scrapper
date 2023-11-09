@@ -1,120 +1,77 @@
+import { ILogObj, IMeta, Logger } from "tslog";
+import { AppInstance } from "./appInstance.js";
 import axios from "axios";
-import Ajv, { ValidateFunction, JSONSchemaType } from "ajv";
+import { isNativeError } from "util/types";
 
-export enum ELogType {
-  INFO,
-  WARNING,
-  ERROR,
-  CRITIAL,
+enum ELogLevelColors {
+  INFO = 0x33ecff,
+  WARN = 0xf9ff33,
+  ERROR = 0xff6833,
+  FATAL = 0xa533ff,
 }
-
-export interface RichLog {
-  type: ELogType;
-  message: string;
-  instanceName?: string;
-  quickCode?: number;
-  moduleName: string;
-  detail?: string;
-  emote?: string;
-}
-
-const RichLogSchema: JSONSchemaType<RichLog> = {
-  type: "object",
-  properties: {
-    message: { type: "string" },
-    instanceName: { type: "string", nullable: true },
-    type: { type: "integer" },
-    moduleName: { type: "string" },
-    quickCode: { type: "integer", nullable: true },
-    detail: { type: "string", nullable: true },
-    emote: { type: "string", nullable: true },
-  },
-  required: ["message", "moduleName", "type"],
-};
 
 export class AppLogger {
-  private static fallback_webhook?: string;
+  private static netWeebHook?: string;
+  private static logger = new Logger({ argumentsArrayName: "logArgs" });
 
-  public static async log(content: string | RichLog, netLog = true) {
-    if (!this.fallback_webhook || this.fallback_webhook == "") {
-      netLog = false;
-    }
-
-    if (typeof content == "string") {
-      console.log(content);
-      if (netLog) {
-        this.webhook_log(content);
-      }
-      return;
-    }
-
-    let emote: string;
-    switch (content.type) {
-      case ELogType.INFO: {
-        emote = "✅";
-        break;
-      }
-
-      case ELogType.WARNING: {
-        emote = "⚠️";
-        break;
-      }
-
-      case ELogType.ERROR: {
-        emote = "❌";
-        break;
-      }
-
-      case ELogType.CRITIAL: {
-        emote = "🚫";
-        break;
-      }
-
-      default: {
-        emote = "";
-        break;
-      }
-    }
-    if (content.emote) {
-      emote = content.emote;
-    }
-
-    const rawStr = `${emote} [${new Date().toLocaleString()}] - [${content.instanceName ? content.instanceName + ":" : ""}${
-      content.moduleName
-    } - v${process.env.VERSION}]${content.quickCode ? " (" + content.quickCode + ")" : ""} :  ${content.message}${
-      content.detail
-        ? `\nDetails :\n \`${typeof content.detail == "object" ? JSON.stringify(content.detail) : content.detail}\``
-        : ""
-    }`;
-
-    console.log(rawStr); // Log into console
-    if (netLog) {
-      await this.webhook_log(rawStr); // Log into webhook (only if option is enable)
-    }
+  public static setWebHook(webhook: string) {
+    this.netWeebHook = webhook;
+    this.logger.attachTransport(this.transportWebHook.bind(this));
   }
 
-  private static async webhook_log(message: string) {
-    if (!this.fallback_webhook) return;
-    try {
-      await axios.post(this.fallback_webhook, { content: message });
-    } catch (e) {
-      console.error(e); // bruh moment for the app
-    }
+  public static getLogger() {
+    return this.logger;
   }
 
-  public static isRichLog(e: any): boolean {
-    const ajv: Ajv.default = new Ajv.default();
-    const compiler: ValidateFunction = ajv.compile(RichLogSchema);
-    return compiler(e);
+  public static getInstanceSubLogger(instance: AppInstance) {
+    return this.logger.getSubLogger({ name: instance.cfg.instance_name });
   }
 
-  public static async setWebHookLog(webhook: string) {
-    this.fallback_webhook = webhook;
-  }
+  private static transportWebHook(LogObj: ILogObj) {
+    if (this.netWeebHook) {
+      const logMeta: IMeta = LogObj["_meta"] as IMeta;
+      const logType: string = logMeta.logLevelName;
+      const arrayLogs = LogObj["logArgs"] as Array<any>;
 
-  public static print(e: any) {
-    if (!process.env.NODE_ENV) {
-      console.log(e);
+      const fieldArray = new Array<any>();
+      if (logMeta.name) {
+        fieldArray.push({
+          name: "Instance name",
+          value: logMeta.name,
+        });
+      }
+
+      fieldArray.push({
+        name: "Date",
+        value: "`" + logMeta.date.toString() + "`",
+      });
+      for (let i = 0; i < arrayLogs.length; i++) {
+        if (typeof arrayLogs[i] === "string") {
+          fieldArray.push({
+            name: "Log",
+            value: arrayLogs[i],
+          });
+        } else if (typeof arrayLogs[i] == "object" && isNativeError(arrayLogs[i].nativeError)) {
+          const error = arrayLogs[i].nativeError;
+          fieldArray.push({
+            name: error?.cause ? error.toString() + " " + error.cause.toString() : error.toString(),
+            value: "```txt\n" + error.stack.toString() + "\n```",
+          });
+        }
+      }
+      axios.post(this.netWeebHook, {
+        embeds: [
+          {
+            title: logType,
+            color: ELogLevelColors[logType] ? ELogLevelColors[logType] : 0x33ff3c,
+            footer: {
+              text: `SchoolScrap v${process.env.VERSION} © NoXeDev`,
+              icon_url: "https://cdn.discordapp.com/avatars/343445422909423628/6449855d48118dd5830bc12cd1b201bd.webp?size=128",
+            },
+            fields: fieldArray,
+          },
+        ],
+      });
     }
   }
 }

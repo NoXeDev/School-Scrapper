@@ -1,6 +1,7 @@
-import axios, { AxiosError, AxiosResponse } from "axios";
+import axios, { AxiosResponse } from "axios";
 import { HTMLElement, parse } from "node-html-parser";
-import { ELogType } from "../core/logger.js";
+import { InstanceError } from "../common/errors.js";
+import { EInstanceState } from "../core/appInstance.js";
 
 export interface ICAS2AuthInfos {
   Auth_Service_Url: string;
@@ -33,13 +34,11 @@ export default class CAS2 {
         },
       })
       .catch((err) => {
-        throw {
-          message: "Axios failed to fetch CAS2",
-          moduleName: this.constructor.name,
-          type: ELogType.CRITIAL,
-          detail: (err as AxiosError).message,
-          quickCode: 1, // Mark as re-tryable
-        };
+        throw new InstanceError("Axios failed to fetch CAS2", {
+          cause: err,
+          code: "CAS2_FETCH_FAILED",
+          stateFlag: EInstanceState.ERROR,
+        });
       });
 
     // This condition mean that the TGC token that we previously fetch (if so) is still valid
@@ -75,20 +74,9 @@ export default class CAS2 {
       })
       .catch((err) => {
         if (err.response.status == 401) {
-          throw {
-            message: "Invalid credentials",
-            moduleName: this.constructor.name,
-            type: ELogType.CRITIAL,
-            quickCode: -1, // Mark as dead
-          };
+          throw new InstanceError("Error with login request : invalid credentials", { stateFlag: EInstanceState.DEAD });
         } else {
-          throw {
-            message: "Error with request",
-            moduleName: this.constructor.name,
-            type: ELogType.CRITIAL,
-            detail: (err as AxiosError).message,
-            quickCode: 1, // Mark as re-tryable
-          };
+          throw new InstanceError("Error with login request : unknown error", { stateFlag: EInstanceState.ERROR, cause: err });
         }
       });
 
@@ -99,12 +87,7 @@ export default class CAS2 {
       };
       return returnValue;
     } else {
-      throw {
-        message: "Bad request handle",
-        moduleName: this.constructor.name,
-        type: ELogType.CRITIAL,
-        quickCode: 1, // Mark as re-tryable
-      };
+      throw new InstanceError("Error with login request : bad request handle", { stateFlag: EInstanceState.ERROR });
     }
   }
 }

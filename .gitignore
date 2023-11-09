@@ -41,7 +41,6 @@ oldconfig.json
 /database
 
 package-lock.json
-yarn.lock
 
 # YARN
 .pnp.*

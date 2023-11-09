@@ -1,15 +1,16 @@
 import axios, { AxiosResponse } from "axios";
 import { execSync } from "child_process";
-import { ELogType } from "./logger.js";
 
-export type IUpdateCfg = { flushDB: boolean; flushLogs: boolean };
+export type IUpdateCfg = { flushDB: boolean; flushLogs: boolean; newVersion: string };
 
 export default class Updater {
   public static async checkForUpdates(): Promise<IUpdateCfg | null> {
     const urlApi: string = process.env.URL;
-    const latestTagRelease: AxiosResponse<any, any> = await axios.get(
-      "https://api.github.com/repos/" + urlApi.replace("git+https://github.com/", "") + "/releases/latest",
-    );
+    const latestTagRelease: AxiosResponse<any, any> = await axios
+      .get("https://api.github.com/repos/" + urlApi.replace("git+https://github.com/", "") + "/releases/latest")
+      .catch((err) => {
+        throw new Error("Failed to fetch github API", { cause: err });
+      });
 
     if (latestTagRelease.data["tag_name"]) {
       if (process.env.VERSION !== latestTagRelease.data["tag_name"]) {
@@ -18,23 +19,20 @@ export default class Updater {
           return {
             flushDB: bodyParsed[0] == "true" ? true : false,
             flushLogs: bodyParsed[1] == "true" ? true : false,
+            newVersion: latestTagRelease.data["tag_name"],
           };
         } else {
           return {
             flushDB: false,
             flushLogs: false,
+            newVersion: latestTagRelease.data["tag_name"],
           };
         }
       } else {
         return null;
       }
     } else {
-      throw {
-        message: "Updater bad datas",
-        type: ELogType.WARNING,
-        moduleName: "Updater",
-        quickCode: -1,
-      };
+      throw new Error("Failed to fetch latest release tag");
     }
   }
 
@@ -49,12 +47,7 @@ export default class Updater {
       }
       execSync("node ./scripts/remote-deploy.js --update " + extensionStr);
     } catch (e) {
-      throw {
-        message: "Updater failed to launch deploy script",
-        type: ELogType.WARNING,
-        moduleName: "Updater",
-        detail: e.toString(),
-      };
+      throw new Error("Failed to launch deploy script", { cause: e });
     }
   }
 }
