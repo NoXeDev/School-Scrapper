@@ -1,7 +1,15 @@
-const cp = require("child_process");
-const fs = require("fs")
+let fs
+let cp
 
 ;(async () => {
+  if (typeof require === 'undefined') {
+    fs = await import("fs")
+    cp = await import("child_process")
+  } else {
+    fs = require("fs")
+    cp = require("child_process")
+  }
+
   if(process.argv[2] && process.argv.includes("--install")){
     await install();
   }
@@ -16,7 +24,8 @@ async function preChecks() {
   console.log("[*] - Checking pm2 presence...");
   try {
     cp.execSync("pm2 --version", {stdio: "ignore"});
-  } catch {
+  } catch(e) {
+    console.log(e)
     console.error("[X] - Error : no pm2 detected...")
     process.exit(-1)
   }
@@ -95,7 +104,7 @@ async function update() {
   if(process.argv.includes("--flush-logs")) {
     console.log("[*] - Flushing logs...")
     try{
-      cp.execSync("pm2 flush ecosystem.config.js", {stdio: "ignore"})
+      cp.execSync("pm2 flush ecosystem.config.cjs", {stdio: "ignore"})
     } catch {
       console.log("[0] - Warning : Failed to flush logs...")
     }
@@ -111,7 +120,7 @@ async function update() {
 
   console.log("[*] - Restart updated application")
   try {
-    cp.execSync(`pm2 restart ecosystem.config.js -- update-ok ${process.argv.includes("--flush-database") ? "update-db-flush" : ""} ${process.argv.includes("--flush-logs") ? "update-logs-flush" : ""}`)
+    cp.execSync(`pm2 restart ecosystem.config.cjs -- update-ok ${process.argv.includes("--flush-database") ? "update-db-flush" : ""} ${process.argv.includes("--flush-logs") ? "update-logs-flush" : ""}`)
     console.log("[^] - Updated successfully !")
   } catch {
     console.error("[X] - Failed to restart updated application")
@@ -154,7 +163,7 @@ async function install() {
 
   console.log("[*] - Create pm2 process...")
   try {
-    cp.execSync(`pm2 start ecosystem.config.js`)
+    cp.execSync(`pm2 start ecosystem.config.cjs`)
     console.log("[^] - PM2 process successfully launched !")
   } catch {
     console.error("[X] - Error : Failed to create pm2 process")

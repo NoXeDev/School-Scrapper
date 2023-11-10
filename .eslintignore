@@ -2,4 +2,4 @@ dist/
 scripts/
 webpack.config.js
 tsconfig.json
-ecosystem.config.js
+ecosystem.config.cjs
