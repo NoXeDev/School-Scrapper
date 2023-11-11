@@ -54,9 +54,16 @@ export class AppLogger {
         } else if (typeof arrayLogs[i] == "object" && isNativeError(arrayLogs[i].nativeError)) {
           const error = arrayLogs[i].nativeError;
           fieldArray.push({
-            name: error?.cause ? error.toString() + " " + error.cause.toString() : error.toString(),
+            name: error.toString(),
             value: "```txt\n" + error.stack.toString() + "\n```",
           });
+
+          if (error?.cause) {
+            fieldArray.push({
+              name: "Caused by",
+              value: error.cause.toString(),
+            });
+          }
         }
       }
       axios.post(this.netWeebHook, {

@@ -66,7 +66,12 @@ export default class Bulletin {
   public static async getDatas(sessid: string, semester_target?: number[]): Promise<TRessources_Record> {
     const postURL: string = process.env.BULLETIN + "/services/data.php?q=dataPremi%C3%A8reConnexion";
 
-    const datas: AxiosResponse<any, any> = await axios.post(postURL, null, { headers: { Cookie: "PHPSESSID=" + sessid } });
+    let datas: AxiosResponse<any, any>;
+    try {
+      datas = await axios.post(postURL, null, { headers: { Cookie: "PHPSESSID=" + sessid } });
+    } catch (e) {
+      throw new InstanceError("Axios semestres fetch failed", { cause: e, code: ELogQuickErrCode.REQUEST_ERROR });
+    }
     if (datas.data?.redirect) {
       throw new InstanceError("Sessid seems expired", { code: ELogQuickErrCode.SESSID_EXPIRED });
     }
@@ -142,7 +147,10 @@ export default class Bulletin {
         throw new InstanceError("Semestres paring failed");
       }
     } else {
-      throw new InstanceError("Service unknown error", { code: ELogQuickErrCode.BAD_BULLETIN_DATAS });
+      throw new InstanceError("Bulletin is not returning required datas", {
+        code: ELogQuickErrCode.BAD_BULLETIN_DATAS,
+        cause: new Error(JSON.stringify(datas.data)),
+      });
     }
   }
 
