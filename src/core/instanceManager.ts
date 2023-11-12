@@ -125,6 +125,10 @@ export class InstanceManager {
       if (e.code == "SESSID_EXPIRED" && !(await Bulletin.checkSessid(instance.sessid)) && !forceAuth) {
         return this.asyncScrapRoutine(instance, true);
       } else {
+        if (e.message.includes("Relevé non disponible pour ce semestre")) {
+          // Ignore this case, this is a really strange reaction from the server
+          return;
+        }
         AppLogger.getInstanceSubLogger(instance).error("Bulletin get datas failed", e);
         instance.setState(EInstanceState.ERROR);
         return;
