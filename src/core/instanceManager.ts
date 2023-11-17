@@ -126,8 +126,8 @@ export class InstanceManager {
         return this.asyncScrapRoutine(instance, true);
       } else {
         console.log(e);
-        console.log(e.message);
-        if (e.message.includes("non disponible")) {
+        console.log(e.cause.message);
+        if (e.cause.message.includes("non disponible")) {
           // Ignore this case, this is a really strange reaction from the server
           return;
         }
