@@ -125,7 +125,9 @@ export class InstanceManager {
       if (e.code == "SESSID_EXPIRED" && !(await Bulletin.checkSessid(instance.sessid)) && !forceAuth) {
         return this.asyncScrapRoutine(instance, true);
       } else {
-        if (e.message.includes("Relevé non disponible pour ce semestre")) {
+        console.log(e);
+        console.log(e.message);
+        if (e.message.includes("non disponible")) {
           // Ignore this case, this is a really strange reaction from the server
           return;
         }

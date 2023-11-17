@@ -1,6 +1,8 @@
+import axios from "axios";
+import Sheduler from "./scheduler.js";
+
 import { ILogObj, IMeta, Logger } from "tslog";
 import { AppInstance } from "./appInstance.js";
-import axios from "axios";
 import { isNativeError } from "util/types";
 
 enum ELogLevelColors {
@@ -13,10 +15,14 @@ enum ELogLevelColors {
 export class AppLogger {
   private static netWeebHook?: string;
   private static logger = new Logger({ argumentsArrayName: "logArgs" });
+  private static fallbackLogger = new Logger({ name: "fallback" });
+  private static fallbackQueue: Array<ILogObj> = new Array<ILogObj>();
+  private static fallbackQueueShed: Sheduler = new Sheduler();
 
   public static setWebHook(webhook: string) {
     this.netWeebHook = webhook;
     this.logger.attachTransport(this.transportWebHook.bind(this));
+    this.fallbackQueueShed.bindAJob("fallbackLogger", "*/1 * * * *", this.fallbackLoggerRoutine.bind(this));
   }
 
   public static getLogger() {
@@ -27,7 +33,21 @@ export class AppLogger {
     return this.logger.getSubLogger({ name: instance.cfg.instance_name });
   }
 
-  private static transportWebHook(LogObj: ILogObj) {
+  private static async fallbackLoggerRoutine() {
+    if (this.fallbackQueue.length > 0) {
+      for (let i = this.fallbackQueue.length - 1; i >= 0; i--) {
+        const logObj = this.fallbackQueue[i];
+        try {
+          await this.transportWebHook(logObj, true);
+          this.fallbackQueue.splice(i, 1);
+        } catch {
+          break;
+        }
+      }
+    }
+  }
+
+  private static async transportWebHook(LogObj: ILogObj, fallbackMode?: boolean): Promise<void> {
     if (this.netWeebHook) {
       const logMeta: IMeta = LogObj["_meta"] as IMeta;
       const logType: string = logMeta.logLevelName;
@@ -66,19 +86,28 @@ export class AppLogger {
           }
         }
       }
-      axios.post(this.netWeebHook, {
-        embeds: [
-          {
-            title: logType,
-            color: ELogLevelColors[logType] ? ELogLevelColors[logType] : 0x33ff3c,
-            footer: {
-              text: `SchoolScrap v${process.env.VERSION} © NoXeDev`,
-              icon_url: "https://cdn.discordapp.com/avatars/343445422909423628/6449855d48118dd5830bc12cd1b201bd.webp?size=128",
+      await axios
+        .post(this.netWeebHook, {
+          embeds: [
+            {
+              title: logType,
+              color: ELogLevelColors[logType] ? ELogLevelColors[logType] : 0x33ff3c,
+              footer: {
+                text: `SchoolScrap v${process.env.VERSION} © NoXeDev`,
+                icon_url: "https://cdn.discordapp.com/avatars/343445422909423628/6449855d48118dd5830bc12cd1b201bd.webp?size=128",
+              },
+              fields: fieldArray,
             },
-            fields: fieldArray,
-          },
-        ],
-      });
+          ],
+        })
+        .catch((err) => {
+          if (fallbackMode) {
+            throw new Error("Webhook logger failed", { cause: err });
+          } else {
+            this.fallbackLogger.error(new Error("Webhook logger failed", { cause: err }));
+            this.fallbackQueue.push(LogObj);
+          }
+        });
     }
   }
 }
