@@ -125,9 +125,9 @@ export class InstanceManager {
       if (e.code == "SESSID_EXPIRED" && !(await Bulletin.checkSessid(instance.sessid)) && !forceAuth) {
         return this.asyncScrapRoutine(instance, true);
       } else {
-        console.log(e);
         console.log(e.cause.message);
         if (e.cause.message.includes("non disponible")) {
+          console.log("Ignore...");
           // Ignore this case, this is a really strange reaction from the server
           return;
         }
