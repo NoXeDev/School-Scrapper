@@ -72,7 +72,7 @@ export class InstanceManager {
 
     this.shed.bindAJob(
       "Check_New_Notes",
-      "*/5 * * * *",
+      "*/1 * * * *",
       () => this.syncExecOnInstanceState(this.instances, EInstanceState.RUNNING, this.asyncScrapRoutine),
       true,
     ); // check for new notes
@@ -103,7 +103,13 @@ export class InstanceManager {
     func: (instance: AppInstance) => Promise<void>,
   ): void {
     for (const instance of Array.from(instances.values()).filter((e) => e.state === state)) {
-      this.semaphore.runExclusive(async () => await func(instance), 1);
+      this.semaphore.runExclusive(async () => {
+        try {
+          await func(instance);
+        } catch (e) {
+          AppLogger.getInstanceSubLogger(instance).error("Instance routine failed", e);
+        }
+      }, 1);
     }
   }
 

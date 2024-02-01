@@ -14,7 +14,7 @@ enum ELogLevelColors {
 
 export class AppLogger {
   private static netWeebHook?: string;
-  private static logger = new Logger({ argumentsArrayName: "logArgs" });
+  private static logger = new Logger({ argumentsArrayName: "logArgs", prettyLogTimeZone: "local" });
   private static fallbackLogger = new Logger({ name: "fallback" });
   private static fallbackQueue: Array<ILogObj> = new Array<ILogObj>();
   private static fallbackQueueShed: Sheduler = new Sheduler();
