@@ -129,6 +129,11 @@ export default class Bulletin {
             }
             Object.assign(resolvedReturn, ressources);
             Object.assign(resolvedReturn, saes);
+          } else {
+            throw new InstanceError("Invalids datas parsed", {
+              code: ELogQuickErrCode.BAD_BULLETIN_DATAS,
+              cause: new Error(JSON.stringify(Bulletin.dataValidator?.errors)),
+            });
           }
         }
         return resolvedReturn;

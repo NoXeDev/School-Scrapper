@@ -4,11 +4,8 @@ export type TRessources_Record = Record<string, IBulletin_Ressource>;
 
 export interface IBulletin_Evaluation {
   coef: string;
-  date: string;
   description?: string;
   evaluation_type: number;
-  heure_debut: string;
-  heure_fin: string;
   id: number;
   note: {
     max: string;
@@ -43,11 +40,8 @@ const JTDBulletin: JSONSchemaType<TRessources_Record> = {
             type: "object",
             properties: {
               coef: { type: "string" },
-              date: { type: "string" },
               description: { type: "string", nullable: true },
               evaluation_type: { type: "number" },
-              heure_debut: { type: "string" },
-              heure_fin: { type: "string" },
               id: { type: "number" },
               note: {
                 type: "object",
@@ -66,7 +60,7 @@ const JTDBulletin: JSONSchemaType<TRessources_Record> = {
               },
               url: { type: "string" },
             },
-            required: ["coef", "date", "evaluation_type", "heure_debut", "heure_fin", "id", "note", "poids", "url"],
+            required: ["coef", "evaluation_type", "id", "note", "poids", "url"],
           },
         },
         id: { type: "integer" },
