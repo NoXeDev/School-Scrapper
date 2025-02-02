@@ -1,7 +1,7 @@
 import webpack from "webpack";
-import { readFile } from "fs/promises";
+import { readFileSync } from "fs";
 
-const packagejson = JSON.parse(await readFile("./package.json", "utf8"));
+const packagejson = JSON.parse(readFileSync("./package.json", "utf8"));
 
 export default {
   devtool: "inline-source-map",
