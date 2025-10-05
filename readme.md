@@ -1,1 +1,1 @@
-# simple school-scrapper, dm for details
+# simple school-scrapper
